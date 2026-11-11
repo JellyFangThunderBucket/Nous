@@ -6,7 +6,8 @@ Sources sits immediately to the right of Settings. It shows a read-only snapshot
 of the current webpage's live HTML, with wrapping, scrolling, light syntax
 coloring and a copy button in the upper-right corner. It is not an editor and
 does not navigate links, execute the displayed code or upload its contents.
-Opening it again refreshes the snapshot. It excludes Nous itself. This is the
+Opening it again refreshes the snapshot. It excludes Nous itself and reads serialization without cloning page elements
+or constructing custom components. This is the
 current DOM, including page changes made by scripts, rather than a claim to be
 the original HTTP response. It does not traverse frames or closed shadow roots.
 The full snapshot is displayed and copied; coloring is bounded to the first
@@ -89,7 +90,8 @@ The browser scripts use Playwright and Chromium already provided by the test
 environment; they are not application dependencies. The new rendered checks
 cover Sources placement, exact HTML copy, read-only rendering, full large-page
 content, state restoration, Settings switching, minimize/Escape/reopen, and
-continued operation of an underlying page control. They verify working iframe
+continued operation of an underlying page control. A custom-element constructor
+counter verifies that opening Sources does not instantiate page components. They verify working iframe
 interaction, X-Frame-Options denial, parent CSP frame denial, preserved cross-origin embeds,
 blocked cross-origin guidance, HTML-only inspection
 and Back after fallback, HTTP errors, size limits and stale request cancellation

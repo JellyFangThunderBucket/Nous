@@ -29,6 +29,7 @@ const server=http.createServer((req,res)=>{
    const page=await browser.newPage({viewport:{width,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto(address+'/fixture');
    await page.evaluate(()=>{Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.copiedHTML=text;}}});});
+   await page.evaluate(()=>{window.customConstructions=0;customElements.define('source-fixture-element',class extends HTMLElement{constructor(){super();window.customConstructions++;}});document.body.append(document.createElement('source-fixture-element'));});
    await page.evaluate(source);
    const q=s=>page.locator('#nous-bookmarklet '+s);
    const open=async text=>{await q('#tabs .tab').first().click();await q('#find').fill(text);await q('#items .resource').first().click();};
@@ -38,6 +39,7 @@ const server=http.createServer((req,res)=>{
    const before=requests.length;await q('#sourcestab').click();
    const snapshot=await q('#sourcecode').textContent();
    if(width===390&&process.env.NOUS_SCREENSHOT_DIR)await page.screenshot({path:path.join(process.env.NOUS_SCREENSHOT_DIR,'sources-panel.png')});
+   assert.equal(await page.evaluate(()=>window.customConstructions),1,'Sources must not construct or upgrade page components');
    assert(snapshot.startsWith('<!DOCTYPE html>'));assert(snapshot.includes('<html lang="en">'));assert(!snapshot.includes('id="nous-bookmarklet"'));
    assert.equal(await q('#sourcecode').evaluate(e=>e.isContentEditable),false);
    assert(await q('#sourcecode .sourcetag').count()>0);
@@ -47,8 +49,8 @@ const server=http.createServer((req,res)=>{
    await q('#sourcestab').click();assert.equal(await q('#find').inputValue(),'Page ');assert.equal(await q('#items').evaluate(e=>e.scrollTop),scroll);
    await q('#sourcestab').click();await q('#settingstab').click();assert(await q('#sourcespanel').isHidden());assert(await q('#settingspanel').isVisible());
    await q('#settingstab').click();
-   await page.evaluate(()=>document.querySelector('#large').textContent='large-page-marker '.repeat(16000));
-   await q('#sourcestab').click();assert((await q('#sourcecode').textContent()).includes('large-page-marker '.repeat(16000)));assert(await q('#sourcecode .sourcetag').count()>0);
+   await page.evaluate(()=>{document.querySelector('#large').textContent='large-page-marker '.repeat(16000);document.body.append(document.querySelector('#nous-bookmarklet'));});
+   await q('#sourcestab').click();assert((await q('#sourcecode').textContent()).includes('large-page-marker '.repeat(16000)));assert(!(await q('#sourcecode').textContent()).includes('id="nous-bookmarklet"'));assert(await q('#sourcecode .sourcetag').count()>0);
    await q('#minimize').click();assert(await q('#sourcespanel').isHidden());await q('#minimize').click();assert(await q('#sourcespanel').isVisible());
    await page.keyboard.press('Escape');assert(await q('#sourcespanel').isHidden());
    await page.evaluate(()=>document.querySelector('#site-button').click());assert.equal(await page.locator('#site-button').getAttribute('data-clicked'),'yes');

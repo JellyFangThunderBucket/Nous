@@ -348,9 +348,14 @@
     layout();
   }
   function showSources(){
-    const snapshot=document.documentElement.cloneNode(true);
-    snapshot.querySelector('#'+ID)?.remove();
-    sourceSnapshot=(document.doctype?new XMLSerializer().serializeToString(document.doctype)+'\n':'')+snapshot.outerHTML;
+    const serializer=new XMLSerializer();
+    const serialize=node=>{
+      if(node===host)return '';
+      if(node.nodeType!==1||!node.contains(host))return node.outerHTML??serializer.serializeToString(node);
+      const opening=node.outerHTML.match(/^<(?:[^">]|"[^"]*")*>/)[0];
+      return opening+Array.from(node.childNodes,serialize).join('')+'</'+node.localName+'>';
+    };
+    sourceSnapshot=(document.doctype?serializer.serializeToString(document.doctype)+'\n':'')+serialize(document.documentElement);
     const code=$('#sourcecode');
     code.textContent='';
     /* Bound token creation; the rest remains complete plain text. */
