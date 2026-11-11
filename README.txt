@@ -1,4 +1,4 @@
-NOUS 1.5 — TRACE
+NOUS 1.6 — PERSONALIZE
 Follow the thread.
 
 INSTALL OR UPDATE ON IPHONE
@@ -6,7 +6,7 @@ INSTALL OR UPDATE ON IPHONE
 2. In Safari, create or edit a bookmark. Name it Nous and replace its URL with
    the copied code. Save it.
 3. Visit a webpage and tap the saved Nous bookmark. To update an existing Nous
-   bookmark, replace its URL with the 1.5 code; the older installed bookmark will
+   bookmark, replace its URL with the 1.6 code; the older installed bookmark will
    not update itself. Running Nous a second time closes it.
 
 TRACE — HOW NOUS FOUND IT
@@ -18,6 +18,15 @@ metadata is omitted. Preview warnings and inspection feedback take priority.
 This describes discovery, not the original creator, network initiator, script
 call stack, or complete request chain. See release/trace/REPORT.md for checks
 and unverified device behavior.
+
+PERSONALIZE
+Settings > Customize controls lets you show or hide existing toolbar actions,
+Peek copy/inspection controls, Sources, window tools and resource tabs. Every
+option starts visible. Hiding a tab does not stop scanning; its entries remain
+in All, search and matching exports. Settings, All and critical navigation stay
+available. Reset settings restores the original visibility configuration.
+Preferences save per website when storage is available; they are not shared
+across unrelated domains. See docs/personalize/REPORT.md for tests and limits.
 
 SOURCES
 Sources, immediately to the right of Settings, shows the current webpage's live
