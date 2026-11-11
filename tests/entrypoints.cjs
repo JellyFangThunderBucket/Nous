@@ -160,7 +160,7 @@ function open(){vm.runInContext(source,context);assert(activeHost);return active
   root.querySelector('#save').click();
   assert.equal(downloads.at(-1).name,'nous-resources.json');
   const exported=JSON.parse(await blobs.get(downloads.at(-1).url).text());
-  assert.equal(exported.version,'1.5');
+  assert.equal(exported.version,'1.6');
   assert.equal(exported.page,'https://example.test/root');
   assert.equal(exported.entries.length,1);
   assert.equal(exported.entries[0].value,'https://example.test/first');

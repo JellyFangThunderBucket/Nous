@@ -23,7 +23,7 @@ const doc={URL:'https://example.test/',baseURI:'https://example.test/',title:'Fi
 const records=scanContext.scanDocument(doc,doc.URL,{getEntriesByType:()=>[{name:'https://example.test/fetched',initiatorType:'fetch'}]}).records;
 const nodes={};
 const node=tag=>({tagName:tag,children:[],dataset:{},events:{},append(...items){this.children.push(...items);},setAttribute(){},addEventListener(name,fn){this.events[name]=fn;}});
-const state=vm.createContext({previewActive:false,mainHeight:600,previewReturnHeight:600,previewToken:0,closed:false,returnFocus:null,
+const state=vm.createContext({preferences:{visibility:{inspectpage:true}},previewActive:false,mainHeight:600,previewReturnHeight:600,previewToken:0,closed:false,returnFocus:null,
  canvas:node('canvas'),vh:()=>844,document:{createElement:node},icon:()=>'',layout(){},updateSelected(){},
  releaseMedia(){state.previewToken++;state.canvas.children=[];state.peekFrame=null;},
  readablePreview(){},updatePreviewAddress(){},previewUrl:()=>state.previewEntry.value,

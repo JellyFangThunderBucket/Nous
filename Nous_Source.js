@@ -1,4 +1,4 @@
-/* Nous 1.5 — Trace. Follow the thread. Standalone, local resource inspector. */
+/* Nous 1.6 — Personalize. Follow the thread. Standalone, local resource inspector. */
 (() => {
   'use strict';
   const ID = 'nous-bookmarklet';
@@ -266,6 +266,28 @@
         <div class="settingrow settingrange"><label for="setting-inspectorHeight">Inspector height</label><output id="inspectorHeight-value" for="setting-inspectorHeight">60%</output><input id="setting-inspectorHeight" type="range" min="30" max="95" step="1" aria-label="Inspector opening height"></div>
         <div class="settingrow settingrange"><label for="setting-previewHeight">Peek height</label><output id="previewHeight-value" for="setting-previewHeight">34%</output><input id="setting-previewHeight" type="range" min="18" max="65" step="1" aria-label="Preview opening height"></div>
         <label class="settingrow"><span>Remember resized panels</span><span class="switchwrap"><input id="setting-rememberSizes" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <div class="settingsgroup">Customize controls</div>
+        <div class="settingsgroup">Inspector toolbar</div>
+        <label class="settingrow"><span>Rescan</span><span class="switchwrap"><input id="setting-visible-scan" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Copy list</span><span class="switchwrap"><input id="setting-visible-copy" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Export JSON</span><span class="switchwrap"><input id="setting-visible-save" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <div class="settingsgroup">Peek</div>
+        <label class="settingrow"><span>Copy resource</span><span class="switchwrap"><input id="setting-visible-previewcopy" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Inspect this page</span><span class="switchwrap"><input id="setting-visible-inspectpage" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <div class="settingsgroup">Navigation</div>
+        <label class="settingrow"><span>Sources</span><span class="switchwrap"><input id="setting-visible-sourcestab" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Minimize</span><span class="switchwrap"><input id="setting-visible-minimize" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Maximize</span><span class="switchwrap"><input id="setting-visible-maximize" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <div class="settingsgroup">Resource categories</div>
+        <label class="settingrow"><span>Links</span><span class="switchwrap"><input id="setting-visible-Links" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Images</span><span class="switchwrap"><input id="setting-visible-Images" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Video</span><span class="switchwrap"><input id="setting-visible-Video" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Audio</span><span class="switchwrap"><input id="setting-visible-Audio" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Scripts</span><span class="switchwrap"><input id="setting-visible-Scripts" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Styles</span><span class="switchwrap"><input id="setting-visible-Styles" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Frames</span><span class="switchwrap"><input id="setting-visible-Frames" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Metadata</span><span class="switchwrap"><input id="setting-visible-Metadata" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Network</span><span class="switchwrap"><input id="setting-visible-Network" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
         <div class="settingsbottom"><button class="actionpill" id="settingsreset">Reset settings</button><p id="settingsnote" role="status">Saved for this website.</p></div>
       </section>
 
@@ -298,10 +320,10 @@
   const downloads=new Set();
   const vh=()=>Math.max(240,viewport?viewport.height:window.innerHeight);
   const clamp=(n,min,max)=>Math.max(min,Math.min(n,max));
-  const DEFAULTS=Object.freeze({theme:'light',accent:'mint',textSize:12,density:'compact',inspectorHeight:60,previewHeight:34,wrapUrls:false,rememberSizes:true});
+  const DEFAULTS=Object.freeze({theme:'light',accent:'mint',textSize:12,density:'compact',inspectorHeight:60,previewHeight:34,wrapUrls:false,rememberSizes:true,visibility:Object.freeze({scan:true,copy:true,save:true,previewcopy:true,inspectpage:true,sourcestab:true,minimize:true,maximize:true,Links:true,Images:true,Video:true,Audio:true,Scripts:true,Styles:true,Frames:true,Metadata:true,Network:true})});
   const PREF_KEY='__nous_preferences_v1';
   function sanitizePreferences(input){
-    const p=input&&typeof input==='object'?input:{}, out={...DEFAULTS};
+    const p=input&&typeof input==='object'?input:{}, out={...DEFAULTS,visibility:{...DEFAULTS.visibility}};
     for(const [key,allowed] of Object.entries({theme:['light','dark','system'],accent:['mint','blue','violet','amber'],density:['compact','comfortable']})){
       if(allowed.includes(p[key]))out[key]=p[key];
     }
@@ -309,6 +331,8 @@
       const n=p[key];if(typeof n==='number'&&Number.isFinite(n))out[key]=Math.max(min,Math.min(max,Math.round(n)));
     }
     for(const key of ['wrapUrls','rememberSizes'])if(typeof p[key]==='boolean')out[key]=p[key];
+    const visibility=p.visibility&&typeof p.visibility==='object'&&!Array.isArray(p.visibility)?p.visibility:{};
+    for(const key of Object.keys(DEFAULTS.visibility))if(Object.prototype.hasOwnProperty.call(visibility,key)&&typeof visibility[key]==='boolean')out.visibility[key]=visibility[key];
     return out;
   }
   let storageAvailable=true, savedPreferences=null;
@@ -325,12 +349,29 @@
     dock.dataset.accent=preferences.accent;dock.dataset.density=preferences.density;
     dock.style.setProperty('--resource-size',preferences.textSize+'px');
     dock.classList.toggle('wrapurls',preferences.wrapUrls);
+    applyVisibility();
+  }
+  function applyVisibility(){
+    const visible=preferences.visibility;
+    if(!visible.sourcestab&&sourcesOpen)setSourcesView(false);
+    if(!visible.minimize&&mini)toggleMini();
+    for(const id of ['scan','copy','save','previewcopy','sourcestab','minimize','maximize'])$('#'+id).hidden=!visible[id];
+    $('#inspectpage').hidden=!visible.inspectpage||!peekFrame;
+    $('.tools').hidden=settingsOpen||sourcesOpen||!(visible.scan||visible.copy||visible.save);
+    for(const [name,tab] of tabs)tab.button.hidden=name!=='All'&&!visible[name];
+    if(category!=='All'&&!visible[category]){category='All';render();}
+  }
+  function changeVisibility(key,value){
+    if(!Object.prototype.hasOwnProperty.call(DEFAULTS.visibility,key)||typeof value!=='boolean')return;
+    preferences=sanitizePreferences({...preferences,visibility:{...preferences.visibility,[key]:value}});
+    applyVisibility();syncSettings();savePreferences();
   }
   function syncSettings(){
     for(const key of ['theme','accent','textSize','density','inspectorHeight','previewHeight']){
       $('#setting-'+key).value=String(preferences[key]);
     }
     for(const key of ['wrapUrls','rememberSizes'])$('#setting-'+key).checked=preferences[key];
+    for(const key of Object.keys(DEFAULTS.visibility))$('#setting-visible-'+key).checked=preferences.visibility[key];
     $('#textSize-value').textContent=preferences.textSize+' px';
     $('#inspectorHeight-value').textContent=preferences.inspectorHeight+'%';
     $('#previewHeight-value').textContent=preferences.previewHeight+'%';
@@ -341,7 +382,7 @@
     settingsOpen=open;
     if(open&&previewActive)closePreview();
     $('#settingspanel').hidden=!open;$('#items').hidden=open;
-    $('.tools').hidden=open;$('.searchline').hidden=open;$('.listhead').hidden=open;
+    $('.tools').hidden=open||!(preferences.visibility.scan||preferences.visibility.copy||preferences.visibility.save);$('.searchline').hidden=open;$('.listhead').hidden=open;
     $('#settingstab').classList.toggle('active',open);$('#settingstab').setAttribute('aria-pressed',String(open));
     if(open)syncSettings();
     if(redraw)render();
@@ -372,6 +413,7 @@
     code.append(document.createTextNode(sourceSnapshot.slice(position)));
   }
   function setSourcesView(open,redraw=true){
+    if(open&&!preferences.visibility.sourcestab)return;
     if(open){
       if(settingsOpen)setSettingsView(false,false);
       sourceReturnScroll=$('#items').scrollTop;
@@ -379,7 +421,7 @@
     }
     sourcesOpen=open;
     $('#sourcespanel').hidden=!open;$('#items').hidden=open;
-    $('.tools').hidden=open;$('.searchline').hidden=open;$('.listhead').hidden=open;
+    $('.tools').hidden=open||!(preferences.visibility.scan||preferences.visibility.copy||preferences.visibility.save);$('.searchline').hidden=open;$('.listhead').hidden=open;
     $('#sourcestab').classList.toggle('active',open);$('#sourcestab').setAttribute('aria-pressed',String(open));
     if(open)showSources();
     else{sourceSnapshot='';$('#sourcecode').textContent='';}
@@ -713,11 +755,12 @@
 
   function domain(entry){try{return new URL(entry.value).hostname.replace(/^www\./,'')||entry.source;}catch{return entry.source;}}
   function render(){
+    if(category!=='All'&&!preferences.visibility[category])category='All';
     const q=$('#find').value.toLowerCase().trim();
     filtered=records.filter(entry=>(category==='All'||entry.type===category)&&(!q||(entry.value+' '+entry.label+' '+entry.source).toLowerCase().includes(q)));
     $('#count').textContent=(q?filtered.length+' MATCH'+(filtered.length===1?'':'ES'):category==='All'?'ALL RESOURCES':category.toUpperCase()+' · '+filtered.length)+(skipped?' · LIMIT 2,500':'');
     const counts=new Map();for(const entry of records)counts.set(entry.type,(counts.get(entry.type)||0)+1);
-    for(const c of categories){const tab=tabs.get(c);tab.button.classList.toggle('active',c===category&&!settingsOpen&&!sourcesOpen);tab.button.setAttribute('aria-pressed',String(c===category&&!settingsOpen&&!sourcesOpen));tab.count.textContent=String(c==='All'?records.length:counts.get(c)||0);}
+    for(const c of categories){const tab=tabs.get(c);tab.button.hidden=c!=='All'&&!preferences.visibility[c];tab.button.classList.toggle('active',c===category&&!settingsOpen&&!sourcesOpen);tab.button.setAttribute('aria-pressed',String(c===category&&!settingsOpen&&!sourcesOpen));tab.count.textContent=String(c==='All'?records.length:counts.get(c)||0);}
     const list=$('#items');list.replaceChildren();
     if(!filtered.length){
       const empty=document.createElement('div');empty.className='empty';empty.innerHTML='<span class="avatar">'+icon('search')+'</span><strong>No threads here yet.</strong><p>Try a shorter search, another category, or rescan after the page loads.</p>';list.append(empty);return;
@@ -840,7 +883,7 @@
           if(peekFrame===frame){updatePreviewAddress(previewUrl());readablePreview(frame,url,token);}
         });
         canvas.append(frame);
-        $('#inspectpage').hidden=false;
+        $('#inspectpage').hidden=!preferences.visibility.inspectpage;
         status(discovery?discovery+' · If blocked, use Open.':'Some sites block embedded previews. Use Open if this stays blank.');
         frame.dataset.previewStatus=$('#previewfoot').textContent;
         frame.addEventListener('error',()=>readablePreview(frame,url,token,true));
@@ -946,6 +989,7 @@
     on($('#setting-'+key),'change',savePreferences);
   }
   for(const key of ['wrapUrls','rememberSizes'])on($('#setting-'+key),'change',event=>{changePreference(key,event.target.checked);savePreferences();});
+  for(const key of Object.keys(DEFAULTS.visibility))on($('#setting-visible-'+key),'change',event=>changeVisibility(key,event.target.checked));
   on($('#settingsreset'),'click',()=>{
     preferences={...DEFAULTS};mainHeight=vh()*.60;previewHeight=vh()*.34;
     rememberedHeight=mainHeight;previewReturnHeight=mainHeight;full=false;
@@ -959,7 +1003,7 @@
   on($('#inspectback'),'click',backInspection);
   on($('#copy'),'click',()=>copyText(filtered.map(entry=>entry.type+'\t'+entry.label+'\t'+entry.value).join('\n')));
   on($('#save'),'click',()=>{
-    const data={app:'Nous',version:'1.5',page:currentScan.url,capturedAt:new Date().toISOString(),entries:filtered};
+    const data={app:'Nous',version:'1.6',page:currentScan.url,capturedAt:new Date().toISOString(),entries:filtered};
     const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));downloads.add(url);
     const a=document.createElement('a');a.href=url;a.download='nous-resources.json';root.append(a);a.click();a.remove();
     later(()=>{URL.revokeObjectURL(url);downloads.delete(url);},30000);note('Your threads, exported.');
