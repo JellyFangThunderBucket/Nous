@@ -131,3 +131,11 @@ rendered checks use NOUS_BASELINE; see release/trace/README.md. Trace adds no
 scanning, requests or UI elements. Physical iPhone Safari remains unverified.
 Use python3 release/trace/package.py for the 1.5 candidate; release/package.py
 and the earlier release files remain historical 1.4 artifacts.
+
+SOURCES AND RESTRICTED PREVIEWS — UNRELEASED FOLLOW-UP
+See docs/SOURCES_AND_PREVIEWS.md for current commands, controlled browser checks,
+unchanged-component comparisons, and device/live-GitHub validation limits.
+The new browser suite is node tests/sources-preview-browser.cjs.
+Historical preservation suites assume a frozen UI; this requested addition
+intentionally adds only Sources markup/styles and its tab. No new application
+version or final release is published by this follow-up.
