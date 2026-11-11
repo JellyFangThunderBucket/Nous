@@ -1,4 +1,4 @@
-/* Nous 1.4 — The refinement release. Follow the thread. Standalone, local resource inspector. */
+/* Nous 1.5 — Trace. Follow the thread. Standalone, local resource inspector. */
 (() => {
   'use strict';
   const ID = 'nous-bookmarklet';
@@ -714,15 +714,22 @@
     $('#previewkind').textContent=entry.type+' · '+entry.label;
     $('#previewopen').disabled=!web;
     const status=text=>{if(!closed&&token===previewToken)$('#previewfoot').textContent=text;};
+    const discovery=[
+      'a[href]','area[href]','form[action]','img[src]','img[data-src]','img[data-original]',
+      'img.currentSrc','srcset','video[src]','video[data-src]','video[poster]','video.currentSrc',
+      'audio[src]','audio[data-src]','audio.currentSrc','source[src]','script[src]','link[rel]',
+      'link[imagesrcset]','iframe[src]','frame[src]','embed[src]','object[data]','style=url()',
+      'meta','document.title','location','Performance API'
+    ].includes(entry.source)?'Discovered via '+entry.source:'';
     if((web||blob)&&entry.url){
       if(image){
         const stage=document.createElement('div');stage.className='imagestage';const img=document.createElement('img');img.alt=entry.label||'Image preview';img.src=url;img.referrerPolicy='no-referrer';
-        img.onerror=()=>status('Image unavailable here. Try Open.');stage.append(img);canvas.append(stage);status('Image preview · drag the handle for more room.');
+        img.onerror=()=>status('Image unavailable here. Try Open.');stage.append(img);canvas.append(stage);status(discovery||'Image preview · drag the handle for more room.');
       }else if(video||audio){
         const media=document.createElement(video?'video':'audio');media.controls=true;media.preload='metadata';media.src=url;
         media.onerror=()=>status('This source cannot play here. Try Open.');
         if(video){media.playsInline=true;canvas.append(media);}else{const stage=document.createElement('div');stage.className='audiostage';stage.innerHTML='<span class="avatar">'+icon('audio')+'</span>';stage.append(media);canvas.append(stage);}
-        status((video?'Video':'Audio')+' preview · playback depends on the source.');
+        status(discovery?discovery+' · May not play.':(video?'Video':'Audio')+' preview · playback depends on the source.');
       }else if(web||blob){
         const frame=document.createElement('iframe');frame.title='Peek: '+entry.label;
         frame.setAttribute('sandbox','allow-scripts allow-forms allow-same-origin');frame.referrerPolicy='no-referrer';frame.src=url;
@@ -734,10 +741,10 @@
         });
         canvas.append(frame);
         $('#inspectpage').hidden=false;
-        status('Some sites block embedded previews. Use Open if this stays blank.');
+        status(discovery?discovery+' · If blocked, use Open.':'Some sites block embedded previews. Use Open if this stays blank.');
       }else{const p=document.createElement('div');p.className='plainpreview';p.textContent=url;canvas.append(p);status('This resource is available to copy.');}
     }else{
-      const p=document.createElement('div');p.className='plainpreview';p.textContent=url;canvas.append(p);status(entry.url?'Link scheme shown as text. Copy it to use elsewhere.':'Metadata · a small detail, a little more context.');
+      const p=document.createElement('div');p.className='plainpreview';p.textContent=url;canvas.append(p);status(entry.url?'Link scheme shown as text. Copy it to use elsewhere.':(discovery||'Metadata · a small detail, a little more context.'));
     }
     layout();updateSelected();
   }
@@ -844,7 +851,7 @@
   on($('#inspectback'),'click',backInspection);
   on($('#copy'),'click',()=>copyText(filtered.map(entry=>entry.type+'\t'+entry.label+'\t'+entry.value).join('\n')));
   on($('#save'),'click',()=>{
-    const data={app:'Nous',version:'1.4',page:currentScan.url,capturedAt:new Date().toISOString(),entries:filtered};
+    const data={app:'Nous',version:'1.5',page:currentScan.url,capturedAt:new Date().toISOString(),entries:filtered};
     const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));downloads.add(url);
     const a=document.createElement('a');a.href=url;a.download='nous-resources.json';root.append(a);a.click();a.remove();
     later(()=>{URL.revokeObjectURL(url);downloads.delete(url);},30000);note('Your threads, exported.');
