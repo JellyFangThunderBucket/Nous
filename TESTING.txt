@@ -1,0 +1,103 @@
+NOUS 1.4 — TESTING NOTES
+
+VERIFICATION ENVIRONMENT
+Node.js with synthetic DOM, frame, event, clipboard, fetch and storage fixtures.
+These checks execute real Nous JavaScript, but they are not a web browser and
+cannot establish iOS rendering, browser security enforcement, or device speed.
+The unchanged 1.3 package was retained as the baseline. Its existing scanner,
+settings/touch and inspection-bridge checks passed before implementation. New
+targeted baseline checks exposed the issues described in CHANGELOG.md.
+
+PASSED — AUTOMATED AND STATIC
+- JavaScript syntax for the readable source, generated one-line bookmarklet and
+  embedded demo script. The bookmarklet and preview-embedded source are checked
+  against the final readable source; the source, bookmarklet payload and demo's
+  embedded payload each pass the same synthetic entry-point interaction tests.
+- Scanner fixtures covering all existing categories, ordinary links and media,
+  empty and dynamically populated documents, 12,000 candidates, the 2,500
+  limit, duplicates, absolute/relative paths, base URIs, a fallback base element,
+  queries, fragments and encoded characters. At the limit, the 1.3 and 1.4
+  collections match entry for entry and in order on the same large fixture.
+- Responsive image fixtures covering picture/source, common width and density
+  descriptors, currentSrc, a data URL, an encoded comma and image preloads.
+  These do not certify every malformed or browser-specific srcset case.
+- Simulated same-origin live inspection and live redirect; HTML-only fallback;
+  inaccessible/blocked frames; failed fetches; rejected fallback redirects and
+  differing response URLs; retained previous results after failure; rescan;
+  repeated same-page inspection; filter, pagination and scroll restoration;
+  Back and its five-entry cap; cancellation, timeout and out-of-order results.
+- Synthetic interaction checks for search, filtered copy, clipboard fallback,
+  filtered JSON export/version, settings, light/dark preference handling,
+  unavailable storage, minimizing, expanding, preview routing, both drag handles,
+  failed pointer capture, touch fallback, short/narrow viewport geometry,
+  closing and repeated opening. Tested viewport-height calculations include
+  240, 320, 420, 640, 844 and 932 CSS pixels. This is not visual verification.
+- Static byte comparison against 1.3: the entire UI markup/style template,
+  icon/brand-mark definitions, panel layout function and touch-resize function
+  are identical. The SVG and PNG brand asset files are byte-for-byte identical.
+  Status text and the demonstration's release label are intentionally updated.
+
+FAILED / ENVIRONMENT-BLOCKED
+- A rendered Chromium browser test could not launch in this environment; Chromium
+  exited with "socket() failed: Operation not permitted". No screenshot or
+  pixel comparison was produced. No 1.4 automated logic test remains failing.
+
+UNVERIFIED
+- Physical iPhone Safari, real bookmark installation/execution, real touch and
+  viewport behavior, Safari clipboard/download behavior, embedding, content
+  blockers, authenticated pages, redirects and CORS/CSP enforcement.
+- Actual browser startup/interaction performance, memory use and visual parity.
+  Static equality and simulated tests cannot prove these. Browser compatibility
+  and performance are not claimed to be universally unchanged or improved.
+- HTML fallback on very large responses: it still reads and parses the complete
+  response and can consume substantial memory. The existing lightweight srcset
+  parser does not fully validate all malformed descriptor combinations.
+
+MEASURED SIZE AND SYNTHETIC SCANNER BENCHMARK
+Measurements from this package compared with the preserved 1.3 source. Byte
+counts include the bookmarklet text file's trailing newline.
+
+                         1.3         1.4         difference
+Readable source          63,525      65,699      +2,174 bytes
+Bookmarklet file         60,072      62,036      +1,964 bytes
+Bookmarklet gzip         17,281      17,814      +533 bytes
+
+A Node-only scanner microbenchmark used a synthetic document, 20 warmups, 61
+alternating warmed samples and 21 fresh-function first-call samples; medians:
+
+1,000 links: first scan 1.845 ms -> 2.137 ms; warmed 1.335 ms -> 1.473 ms.
+12,000 links: first scan 15.151 ms -> 13.719 ms; warmed 13.516 ms -> 12.706 ms.
+Peak deduplication Set entries at 12,000 links: 12,002 -> 2,500.
+
+These small timings vary between runs and the 1,000-link fixture was slower in
+this run. The test excludes DOM query cost, UI creation, layout, browser engine,
+networking and the iPhone; it is not proof that startup or interaction meets the
+performance target on the device. Set entries are not a heap-memory measurement.
+
+RUN THE INCLUDED CHECKS
+From the Nous folder with Node.js available:
+
+  node --check Nous_Source.js
+  node tests/core.cjs
+  node tests/discovery.cjs
+  node tests/settings-touch.cjs
+  node tests/inspection-history.cjs
+  node tests/refinement.cjs
+  node tests/entrypoints.cjs
+  NOUS_ENTRY=bookmarklet node tests/entrypoints.cjs
+  NOUS_ENTRY=preview node tests/entrypoints.cjs
+
+To compare against a separately retained 1.3 source:
+
+  NOUS_BASELINE=/path/to/1.3/Nous_Source.js node tests/discovery.cjs
+  NOUS_BASELINE=/path/to/1.3/Nous_Source.js node tests/preservation.cjs
+  NOUS_BASELINE=/path/to/1.3/Nous_Source.js node tests/benchmark.cjs
+
+RECOMMENDED IPHONE RELEASE CHECK
+On the intended iPhone and Safari, install the bookmarklet and compare 1.3 and
+1.4 on the same ordinary, large and dynamic pages in light and dark themes. Test
+both handles and short landscape viewport, minimize/restore, settings persistence,
+Peek, live same-origin scan, restricted cross-origin and blocked-frame cases,
+repeated inspection, Back, rescan, copy and JSON download. Check site restrictions
+and redirects. Measure actual launch/interaction time and compare screenshots on
+the device before considering visual and performance targets verified.
