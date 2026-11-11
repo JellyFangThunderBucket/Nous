@@ -1,3 +1,13 @@
+# Nous 1.6 — Personalize (release candidate)
+
+- Add Customize controls inside the existing Settings panel using its existing rows and switches. Show or hide optional toolbar, Peek, navigation/window controls and resource tabs immediately.
+- Keep all existing controls visible by default. Settings, All, both Close actions and essential navigation remain available; contextual Peek inspection still requires a supported preview.
+- Treat hidden categories as presentation preferences: collection, All, search, exports, ordering, deduplication and limits are unchanged. Return a hidden selected category to All, including history restoration.
+- Extend existing website-local preferences with sanitized boolean visibility fields. Older values remain compatible; Reset settings restores the complete interface without clearing resources/history.
+- Synchronize source, bookmarklet and embedded preview at version 1.6; preserve existing styles, brands, geometry, gestures, Trace and Sources.
+
+See [validation, screenshots and measured costs](docs/personalize/REPORT.md). Physical iPhone Safari remains unverified; this candidate is not approval for stable publication.
+
 # Follow-up — Sources and restricted previews (unreleased)
 
 - Add a read-only Sources tab immediately after Settings, with live page HTML, scrolling, syntax coloring and copy support. Preserve the resource view when switching back.

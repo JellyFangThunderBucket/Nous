@@ -4,7 +4,7 @@ const psrc=src.slice(src.indexOf('  const DEFAULTS='),src.indexOf('  let mainHei
 const nodeMap={};
 function node(){return {value:'',checked:false,textContent:'',hidden:false,dataset:{},style:{setProperty(k,v){this[k]=v}},classList:{toggle(){}},setAttribute(){}}}
 const stored={data:null,writes:0,fail:false};
-const ctxt=vm.createContext({
+const ctxt=vm.createContext({tabs:new Map(),category:'All',peekFrame:null,mini:false,
  window:{localStorage:{getItem(){if(stored.fail)throw Error('blocked');return stored.data;},setItem(k,v){if(stored.fail)throw Error('blocked');stored.data=v;stored.writes++;}}},
  $:s=>nodeMap[s]||(nodeMap[s]=node()),Number,Object,JSON,Math,
  mainHeight:500,previewHeight:280,rememberedHeight:500,previewReturnHeight:500,full:false,previewActive:false,closed:false,

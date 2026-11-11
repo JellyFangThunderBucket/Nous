@@ -139,3 +139,14 @@ The new browser suite is node tests/sources-preview-browser.cjs.
 Historical preservation suites assume a frozen UI; this requested addition
 intentionally adds only Sources markup/styles and its tab. No new application
 version or final release is published by this follow-up.
+
+NOUS 1.6 — PERSONALIZE CANDIDATE
+Current results, exact default screenshot comparisons, measurements and rollback
+are in docs/personalize/REPORT.md. The baseline is maintained 1.5 commit 71ac52b.
+New suites: node tests/personalize.cjs and node tests/personalize-browser.cjs.
+Use NOUS_BASELINE=/path/to/1.5/Nous_Source.js for personalize-preservation.cjs
+and personalize-benchmark.cjs. Existing historical whole-UI comparisons retain
+their original contracts and explicitly skip without their required baselines.
+Use release/personalize/package.py for the 1.6 candidate. No historical release
+notes or artifacts were changed. Physical iPhone Safari testing remains required
+before a confident stable mobile release claim.

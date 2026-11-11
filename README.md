@@ -1,4 +1,4 @@
-# Nous 1.5 — Trace
+# Nous 1.6 — Personalize
 
 **Follow the thread.**
 
@@ -18,7 +18,17 @@ Nous is a lightweight Safari resource-inspection bookmarklet. It opens over the 
 2. In Safari, create or edit a bookmark. Name it **Nous** and replace its URL with the copied code. Save it.
 3. Visit a webpage and tap the saved Nous bookmark. Running Nous a second time closes it.
 
-To update an existing bookmark, replace its URL with the 1.5 code. Older installed bookmarks do not update automatically.
+To update an existing bookmark, replace its URL with the 1.6 code. Older installed bookmarks do not update automatically.
+
+## Personalize
+
+In **Settings → Customize controls**, choose which toolbar actions, Peek copy/inspection controls, Sources, window tools, and optional resource tabs you want to see. Changes apply immediately. Everything starts visible, so the familiar interface remains the default.
+
+Hiding a resource tab does not stop its scanner: its entries remain in **All**, search, and matching exports. **All**, **Settings**, both **Close** controls, and essential navigation stay available. **Inspect this page** also keeps its normal webpage-only condition. **Reset settings** restores the full interface.
+
+Preferences are saved **per website** when that website permits browser storage. They do not automatically follow you across unrelated domains. Older preferences remain compatible; unavailable storage still allows changes during the session.
+
+See the [validation report and screenshots](docs/personalize/REPORT.md) for tests, measurements and device limitations.
 
 ## Sources
 
@@ -83,6 +93,7 @@ node tests/inspection-history.cjs
 node tests/refinement.cjs
 node tests/entrypoints.cjs
 node tests/trace.cjs
+node tests/personalize.cjs
 NOUS_ENTRY=bookmarklet node tests/entrypoints.cjs
 NOUS_ENTRY=preview node tests/entrypoints.cjs
 NOUS_ENTRY=bookmarklet node tests/trace.cjs
@@ -97,13 +108,13 @@ NOUS_BASELINE=/path/to/1.3/Nous_Source.js node tests/preservation.cjs
 NOUS_BASELINE=/path/to/1.3/Nous_Source.js node tests/benchmark.cjs
 ```
 
-For browser development, serve this directory with `python3 -m http.server` and open `Nous_Preview.html` through that server. The demo needs no backend. The [Trace release instructions](release/trace/README.md) describe the earlier hash-locked candidate and must be used at that revision. This Sources/preview follow-up is not a new published release.
+For browser development, serve this directory with `python3 -m http.server` and open `Nous_Preview.html` through that server. The demo needs no backend. See the [Personalize candidate instructions](release/personalize/README.md) for reproducible packaging, browser checks and rollback. Historical release scripts are retained for their original revisions.
 
 ## Development philosophy
 
 Keep Nous small, standalone, and understandable. Work within standard browser permissions, explain incomplete results, and preserve the page being inspected. Prefer focused maintenance and verified changes over unnecessary features or dependencies. The goal is a useful local tool with clearly documented limits.
 
-See the [Trace regression report](release/trace/REPORT.md) for current test results, unchanged UI checks, measured costs, and remaining device limitations. The 1.4 audit and maintenance reports remain historical records.
+Current results are in the [Personalize report](docs/personalize/REPORT.md). Earlier Trace, Sources, audit and maintenance reports remain historical records.
 
 ## License
 

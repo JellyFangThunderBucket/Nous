@@ -4,7 +4,7 @@ if(!process.env.NOUS_BASELINE){console.log('Peek benchmark skipped; set NOUS_BAS
 const codes=[fs.readFileSync(process.env.NOUS_BASELINE,'utf8'),fs.readFileSync(path.join(__dirname,'..','Nous_Source.js'),'utf8')];
 function make(code){
  const nodes={},node=()=>({children:[],dataset:{},append(...x){this.children.push(...x);},setAttribute(){},addEventListener(){}});
- const c=vm.createContext({previewActive:false,mainHeight:600,previewReturnHeight:600,previewToken:0,closed:false,returnFocus:null,
+ const c=vm.createContext({preferences:{visibility:{inspectpage:true}},previewActive:false,mainHeight:600,previewReturnHeight:600,previewToken:0,closed:false,returnFocus:null,
   canvas:node(),document:{createElement:node},vh:()=>844,icon:()=>'',layout(){},updateSelected(){},
   releaseMedia(){c.previewToken++;c.canvas.children=[];},$:s=>nodes[s]||(nodes[s]={})});
  vm.runInContext(code.slice(code.indexOf('function showPreview('),code.indexOf('function openExternal(')),c);
