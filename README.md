@@ -1,4 +1,4 @@
-# Nous 1.4
+# Nous 1.5 — Trace
 
 **Follow the thread.**
 
@@ -18,7 +18,15 @@ Nous is a lightweight Safari resource-inspection bookmarklet. It opens over the 
 2. In Safari, create or edit a bookmark. Name it **Nous** and replace its URL with the copied code. Save it.
 3. Visit a webpage and tap the saved Nous bookmark. Running Nous a second time closes it.
 
-To update an existing bookmark, replace its URL with the 1.4 code. Older installed bookmarks do not update automatically.
+To update an existing bookmark, replace its URL with the 1.5 code. Older installed bookmarks do not update automatically.
+
+## Trace: how a resource was discovered
+
+When you open Peek, its existing footer can show a short explanation such as **Discovered via img.currentSrc** or **Discovered via Performance API**. There is no extra control to operate.
+
+Trace reads the discovery method already retained by the scanner. It adds no scanning, network requests, observers, or storage. If several methods find the same URL in a category, Trace reports the first retained method. Missing or unrecognized metadata is omitted. Preview warnings and inspection results or errors take priority.
+
+This explains how Nous found an entry. It does **not** identify its original creator, a JavaScript call stack, the actual network initiator, or a complete request chain.
 
 ## Inspection and history
 
@@ -66,8 +74,11 @@ node tests/settings-touch.cjs
 node tests/inspection-history.cjs
 node tests/refinement.cjs
 node tests/entrypoints.cjs
+node tests/trace.cjs
 NOUS_ENTRY=bookmarklet node tests/entrypoints.cjs
 NOUS_ENTRY=preview node tests/entrypoints.cjs
+NOUS_ENTRY=bookmarklet node tests/trace.cjs
+NOUS_ENTRY=preview node tests/trace.cjs
 ```
 
 Optional comparisons require separately retained 1.3 files:
@@ -78,11 +89,13 @@ NOUS_BASELINE=/path/to/1.3/Nous_Source.js node tests/preservation.cjs
 NOUS_BASELINE=/path/to/1.3/Nous_Source.js node tests/benchmark.cjs
 ```
 
-For browser development, serve this directory with `python3 -m http.server` and open `Nous_Preview.html` through that server. The demo needs no backend. See [release instructions](release/README.md) for verified, reproducible packaging.
+For browser development, serve this directory with `python3 -m http.server` and open `Nous_Preview.html` through that server. The demo needs no backend. See [Trace release instructions](release/trace/README.md) for verified, reproducible packaging.
 
 ## Development philosophy
 
 Keep Nous small, standalone, and understandable. Work within standard browser permissions, explain incomplete results, and preserve the page being inspected. Prefer focused maintenance and verified changes over unnecessary features or dependencies. The goal is a useful local tool with clearly documented limits.
+
+See the [Trace regression report](release/trace/REPORT.md) for current test results, unchanged UI checks, measured costs, and remaining device limitations. The 1.4 audit and maintenance reports remain historical records.
 
 ## License
 

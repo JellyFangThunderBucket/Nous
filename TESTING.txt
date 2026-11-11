@@ -116,3 +116,18 @@ visual parity with 1.3, or browser security behavior on arbitrary websites.
 Test scripts now live under tests/, so the commands above resolve their sources
 correctly. No test logic or application files were changed during cleanup.
 See MAINTENANCE.md and release/README.md for hygiene and packaging evidence.
+
+NOUS 1.5 — TRACE CANDIDATE
+The earlier sections are historical 1.4 evidence. Current 1.5 checks, exact
+stable comparisons, measurements and limits are in release/trace/REPORT.md.
+Run the original commands above plus:
+
+  node tests/trace.cjs
+  NOUS_ENTRY=bookmarklet node tests/trace.cjs
+  NOUS_ENTRY=preview node tests/trace.cjs
+
+The preserved 1.4 UI, scanner, inspection and cleanup comparisons and optional
+rendered checks use NOUS_BASELINE; see release/trace/README.md. Trace adds no
+scanning, requests or UI elements. Physical iPhone Safari remains unverified.
+Use python3 release/trace/package.py for the 1.5 candidate; release/package.py
+and the earlier release files remain historical 1.4 artifacts.

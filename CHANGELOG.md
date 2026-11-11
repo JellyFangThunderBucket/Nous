@@ -1,3 +1,12 @@
+# Nous 1.5 — Trace (release candidate)
+
+- Show retained discovery metadata in Peek's existing footer, with no new controls, markup, styling, scanner, storage, or requests.
+- Keep image/media failures, embed warnings, unsupported-link guidance, and inspection feedback in priority. Ignore stale preview callbacks using the existing selection token.
+- Omit unknown discovery metadata. Duplicate resources retain their existing first discovery method; no request-initiator claims are made.
+- Refresh the bookmarklet and preview payloads from the updated readable source; exports identify version 1.5. Brand assets and the existing UI remain unchanged.
+
+See [Trace regression report](release/trace/REPORT.md) for validation and limitations. Physical iPhone Safari remains unverified. This candidate is not the approved final release.
+
 # Nous 1.4 — The Refinement Release
 
 - Report a completed live or HTML-only inspection and its resource count in the
