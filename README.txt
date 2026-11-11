@@ -1,4 +1,4 @@
-NOUS 1.4 — THE REFINEMENT RELEASE
+NOUS 1.5 — TRACE
 Follow the thread.
 
 INSTALL OR UPDATE ON IPHONE
@@ -6,8 +6,18 @@ INSTALL OR UPDATE ON IPHONE
 2. In Safari, create or edit a bookmark. Name it Nous and replace its URL with
    the copied code. Save it.
 3. Visit a webpage and tap the saved Nous bookmark. To update an existing Nous
-   bookmark, replace its URL with the 1.4 code; the older installed bookmark will
+   bookmark, replace its URL with the 1.5 code; the older installed bookmark will
    not update itself. Running Nous a second time closes it.
+
+TRACE — HOW NOUS FOUND IT
+Peek's existing footer can show "Discovered via img.currentSrc" or another
+retained discovery method. No extra action is needed. Trace reads existing
+resource metadata; it adds no scans, requests, observers, or storage. Duplicate
+URLs report the first method retained in that category. Missing or unrecognized
+metadata is omitted. Preview warnings and inspection feedback take priority.
+This describes discovery, not the original creator, network initiator, script
+call stack, or complete request chain. See release/trace/REPORT.md for checks
+and unverified device behavior.
 
 WHAT INSPECTION DOES
 Nous opens over the page and lists browser-visible resources in the top panel.
