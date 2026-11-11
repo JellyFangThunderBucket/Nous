@@ -26,7 +26,7 @@ const node=tag=>({tagName:tag,children:[],dataset:{},events:{},append(...items){
 const state=vm.createContext({previewActive:false,mainHeight:600,previewReturnHeight:600,previewToken:0,closed:false,returnFocus:null,
  canvas:node('canvas'),vh:()=>844,document:{createElement:node},icon:()=>'',layout(){},updateSelected(){},
  releaseMedia(){state.previewToken++;state.canvas.children=[];state.peekFrame=null;},
- updatePreviewAddress(){},previewUrl:()=>state.previewEntry.value,
+ readablePreview(){},updatePreviewAddress(){},previewUrl:()=>state.previewEntry.value,
  $:s=>nodes[s]||(nodes[s]={})});
 vm.runInContext(source.slice(source.indexOf('function showPreview('),source.indexOf('function openExternal(')),state);
 let checks=0;

@@ -19,6 +19,18 @@ This describes discovery, not the original creator, network initiator, script
 call stack, or complete request chain. See release/trace/REPORT.md for checks
 and unverified device behavior.
 
+SOURCES
+Sources, immediately to the right of Settings, shows the current webpage's live
+HTML as read-only text, with scrolling and an upper-right copy button. Reopen
+the tab to refresh its snapshot. It excludes Nous itself and needs no request.
+
+RESTRICTED PREVIEWS
+Working embedded pages keep their existing behavior. Sites such as GitHub can
+forbid embedding. Peek can show a safe, read-only text preview for blocked links
+on the same website when normal browser permissions allow reading their HTML.
+It does not execute the fetched page. Cross-origin restrictions, redirects,
+errors or oversized pages may still require Open. See docs/SOURCES_AND_PREVIEWS.md.
+
 WHAT INSPECTION DOES
 Nous opens over the page and lists browser-visible resources in the top panel.
 Choose a category or search, then tap an entry to open its Peek preview.

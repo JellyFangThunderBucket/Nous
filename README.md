@@ -20,6 +20,10 @@ Nous is a lightweight Safari resource-inspection bookmarklet. It opens over the 
 
 To update an existing bookmark, replace its URL with the 1.5 code. Older installed bookmarks do not update automatically.
 
+## Sources
+
+The **Sources** tab, immediately to the right of Settings, shows the current webpage's live HTML. Scroll through it or use its upper-right copy button. It is read-only: the displayed code and URLs do not run or navigate. The snapshot excludes Nous itself and refreshes when you reopen the tab. No network request is needed.
+
 ## Trace: how a resource was discovered
 
 When you open Peek, its existing footer can show a short explanation such as **Discovered via img.currentSrc** or **Discovered via Performance API**. There is no extra control to operate.
@@ -53,6 +57,10 @@ Settings controls appearance and panel sizes. Preferences are saved per website 
 [Nous_Preview.html](Nous_Preview.html) is a self-contained interactive demonstration with sample resources and a copy/install helper. Open it in a browser that runs scripts; some mobile file-preview apps do not.
 
 [Nous_Source.js](Nous_Source.js) is the readable source. The bookmarklet and demonstration embed the same implementation. [Nous_Brand.svg](Nous_Brand.svg) and [Nous_Brand.png](Nous_Brand.png) are the brand assets. See [CHANGELOG.md](CHANGELOG.md), [AUDIT.md](AUDIT.md), [TESTING.txt](TESTING.txt), and [tests/](tests/) for changes and verification.
+
+## Restricted previews
+
+Some sites, including GitHub, forbid embedding their pages. Working embeds keep their normal behavior. For a blocked link on the same website, Peek can show a **read-only text preview** if normal browser permissions allow the HTML to be read. It does not execute the fetched page or reproduce an interactive website. Cross-origin restrictions, redirects, failed requests and very large pages can still require **Open**. See [Sources and preview notes](docs/SOURCES_AND_PREVIEWS.md) for tested behavior and limits.
 
 ## Browser limitations
 
@@ -89,7 +97,7 @@ NOUS_BASELINE=/path/to/1.3/Nous_Source.js node tests/preservation.cjs
 NOUS_BASELINE=/path/to/1.3/Nous_Source.js node tests/benchmark.cjs
 ```
 
-For browser development, serve this directory with `python3 -m http.server` and open `Nous_Preview.html` through that server. The demo needs no backend. See [Trace release instructions](release/trace/README.md) for verified, reproducible packaging.
+For browser development, serve this directory with `python3 -m http.server` and open `Nous_Preview.html` through that server. The demo needs no backend. The [Trace release instructions](release/trace/README.md) describe the earlier hash-locked candidate and must be used at that revision. This Sources/preview follow-up is not a new published release.
 
 ## Development philosophy
 

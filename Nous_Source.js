@@ -183,6 +183,14 @@
     .dock[data-density="comfortable"] .resource{padding-top:13px;padding-bottom:13px}
     .dock[data-density="comfortable"] .copyitem{min-height:63px}
     .sheet.minimized>.tabstrip,.sheet.minimized>.settingspanel{display:none}
+    .sourcespanel{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;background:#fff}
+    .dock[data-theme="dark"] .sourcespanel{background:#202b24}
+    .sheet.minimized>.sourcespanel{display:none}
+    .sourcecode{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;margin:0;padding:8px 10px;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2;color:var(--text);font:11px/1.55 ui-monospace,SFMono-Regular,monospace;user-select:text;-webkit-user-select:text}
+    .sourcecode .sourcetag{color:#a02c98}
+    .sourcecode .sourceattr{color:#c53b3b}
+    .dock[data-theme="dark"] .sourcecode .sourcetag{color:#e0a1dc}
+    .dock[data-theme="dark"] .sourcecode .sourceattr{color:#f3a09a}
     .settingspanel{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#fff}
     .settingsgroup{padding:9px 12px 7px;background:#edf3ef;border-bottom:1px solid #d3dfd6;color:#658073;font-size:10px;font-weight:650}
     .settingrow{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:45px;padding:8px 12px;border-bottom:1px solid #e0e8e2;font-size:12px;color:#365442}
@@ -239,10 +247,14 @@
       <header class="bar"><span class="brandmark">${mark}</span><div class="brandblock"><div class="wordmark">nous</div><div class="brandtag">mobile inspector</div></div><div class="windowtools"><button class="iconbutton" id="minimize" aria-label="Minimize Nous" title="Minimize">${icon('minimize')}</button><button class="iconbutton" id="maximize" aria-label="Expand inspector" title="Expand">${icon('expand')}</button><button class="iconbutton" id="close" aria-label="Close Nous" title="Close">${icon('close')}</button></div></header>
       <div class="pagecontext"><button type="button" id="inspectback" hidden aria-label="Previous inspected page">${icon('back')}Back</button><span class="dot"></span><span id="site"></span><span class="totalpill" id="total">0 found</span></div>
       <div class="tools" role="toolbar" aria-label="Inspector actions"><button class="tool" id="scan" aria-label="Rescan page">${icon('refresh')}Rescan</button><button class="tool" id="copy" aria-label="Copy filtered list">${icon('copy')}Copy list</button><button class="tool" id="save" aria-label="Export filtered list as JSON">${icon('download')}Export JSON</button></div>
-      <div class="tabstrip"><nav class="tabs" id="tabs" aria-label="Resource categories"></nav><button class="tab settingstab" id="settingstab" aria-controls="settingspanel" aria-pressed="false">${icon('settings')}Settings</button></div>
+      <div class="tabstrip"><nav class="tabs" id="tabs" aria-label="Resource categories"></nav><button class="tab settingstab" id="settingstab" aria-controls="settingspanel" aria-pressed="false">${icon('settings')}Settings</button><button class="tab settingstab" id="sourcestab" aria-controls="sourcespanel" aria-pressed="false">Sources</button></div>
       <div class="searchline"><label class="searchbox">${icon('search')}<input id="find" type="search" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Search resources…" aria-label="Search resources"></label></div>
       <div class="listhead"><span id="count" role="status" aria-live="polite">RESOURCES</span><span id="hint">Tap to peek</span></div>
       <div class="items" id="items" aria-label="Resources"></div>
+      <section class="sourcespanel" id="sourcespanel" hidden aria-label="Current page HTML">
+        <div class="listhead"><span>Current page · live HTML</span><button class="iconbutton" id="sourcecopy" aria-label="Copy page HTML" title="Copy page HTML">${icon('copy')}</button></div>
+        <pre class="sourcecode" id="sourcecode" tabindex="0" aria-label="Read-only page HTML"></pre>
+      </section>
       <section class="settingspanel" id="settingspanel" hidden aria-label="Nous settings">
         <div class="settingsgroup">Appearance</div>
         <label class="settingrow"><span>Theme</span><select id="setting-theme" aria-label="Theme"><option value="light">Light</option><option value="dark">Dark</option><option value="system">Device</option></select></label>
@@ -280,6 +292,7 @@
   let currentScan=null, inspectedFrame=null, peekFrame=null, pendingScan=null, pendingScanTimer=null;
   const inspectionHistory=[];
   let previewActive=false, previewEntry=null, previewToken=0, returnFocus=null, toastTimer=0;
+  let sourceSnapshot='', sourceReturnScroll=0, readableRequest=null;
   const timers=new Set();
   const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);if(!closed)fn();},ms);timers.add(id);return id;};
   const downloads=new Set();
@@ -300,7 +313,7 @@
   }
   let storageAvailable=true, savedPreferences=null;
   try{savedPreferences=JSON.parse(window.localStorage.getItem(PREF_KEY));}catch{storageAvailable=false;}
-  let preferences=sanitizePreferences(savedPreferences), settingsOpen=false;
+  let preferences=sanitizePreferences(savedPreferences), settingsOpen=false, sourcesOpen=false;
   const colorQuery=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
   function savePreferences(){
     try{window.localStorage.setItem(PREF_KEY,JSON.stringify(preferences));storageAvailable=true;}catch{storageAvailable=false;}
@@ -324,6 +337,7 @@
     $('#settingsnote').textContent=storageAvailable?'Saved for this website.':'Settings apply on this page; saving is unavailable here.';
   }
   function setSettingsView(open,redraw=true){
+    if(open&&sourcesOpen)setSourcesView(false,false);
     settingsOpen=open;
     if(open&&previewActive)closePreview();
     $('#settingspanel').hidden=!open;$('#items').hidden=open;
@@ -331,6 +345,45 @@
     $('#settingstab').classList.toggle('active',open);$('#settingstab').setAttribute('aria-pressed',String(open));
     if(open)syncSettings();
     if(redraw)render();
+    layout();
+  }
+  function showSources(){
+    const serializer=new XMLSerializer();
+    const serialize=node=>{
+      if(node===host)return '';
+      if(node.nodeType!==1||!node.contains(host))return node.outerHTML??serializer.serializeToString(node);
+      const opening=node.outerHTML.match(/^<(?:[^">]|"[^"]*")*>/)[0];
+      return opening+Array.from(node.childNodes,serialize).join('')+'</'+node.localName+'>';
+    };
+    sourceSnapshot=(document.doctype?serializer.serializeToString(document.doctype)+'\n':'')+serialize(document.documentElement);
+    const code=$('#sourcecode');
+    code.textContent='';
+    /* Bound token creation; the rest remains complete plain text. */
+    const highlighted=sourceSnapshot.slice(0,200000);
+    let position=0;
+    for(const match of highlighted.matchAll(/<!--[\s\S]*?-->|<![^>]*>|<\/?[a-zA-Z][^>]*>/g)){
+      code.append(document.createTextNode(sourceSnapshot.slice(position,match.index)));
+      const tag=document.createElement('span');tag.className='sourcetag';
+      const name=match[0].match(/^<\/?[^\s>]+/)[0];
+      tag.textContent=name;
+      const attributes=document.createElement('span');attributes.className='sourceattr';attributes.textContent=match[0].slice(name.length);
+      tag.append(attributes);code.append(tag);position=match.index+match[0].length;
+    }
+    code.append(document.createTextNode(sourceSnapshot.slice(position)));
+  }
+  function setSourcesView(open,redraw=true){
+    if(open){
+      if(settingsOpen)setSettingsView(false,false);
+      sourceReturnScroll=$('#items').scrollTop;
+      if(previewActive)closePreview();
+    }
+    sourcesOpen=open;
+    $('#sourcespanel').hidden=!open;$('#items').hidden=open;
+    $('.tools').hidden=open;$('.searchline').hidden=open;$('.listhead').hidden=open;
+    $('#sourcestab').classList.toggle('active',open);$('#sourcestab').setAttribute('aria-pressed',String(open));
+    if(open)showSources();
+    else{sourceSnapshot='';$('#sourcecode').textContent='';}
+    if(redraw){render();if(!open)$('#items').scrollTop=sourceReturnScroll;}
     layout();
   }
   function changePreference(key,value){
@@ -370,6 +423,7 @@
   on(host,'nous:close',closeNous);
   function releaseMedia(){
     ++previewToken;
+    cancelReadablePreview();
     cancelInspection();
     peekFrame=null;
     $('#inspectpage').hidden=true;
@@ -663,7 +717,7 @@
     filtered=records.filter(entry=>(category==='All'||entry.type===category)&&(!q||(entry.value+' '+entry.label+' '+entry.source).toLowerCase().includes(q)));
     $('#count').textContent=(q?filtered.length+' MATCH'+(filtered.length===1?'':'ES'):category==='All'?'ALL RESOURCES':category.toUpperCase()+' · '+filtered.length)+(skipped?' · LIMIT 2,500':'');
     const counts=new Map();for(const entry of records)counts.set(entry.type,(counts.get(entry.type)||0)+1);
-    for(const c of categories){const tab=tabs.get(c);tab.button.classList.toggle('active',c===category&&!settingsOpen);tab.button.setAttribute('aria-pressed',String(c===category&&!settingsOpen));tab.count.textContent=String(c==='All'?records.length:counts.get(c)||0);}
+    for(const c of categories){const tab=tabs.get(c);tab.button.classList.toggle('active',c===category&&!settingsOpen&&!sourcesOpen);tab.button.setAttribute('aria-pressed',String(c===category&&!settingsOpen&&!sourcesOpen));tab.count.textContent=String(c==='All'?records.length:counts.get(c)||0);}
     const list=$('#items');list.replaceChildren();
     if(!filtered.length){
       const empty=document.createElement('div');empty.className='empty';empty.innerHTML='<span class="avatar">'+icon('search')+'</span><strong>No threads here yet.</strong><p>Try a shorter search, another category, or rescan after the page loads.</p>';list.append(empty);return;
@@ -692,11 +746,57 @@
   for(const c of categories){
     const button=document.createElement('button');button.type='button';button.className='tab';button.innerHTML=c==='All'?icon('grid'):'';
     const title=document.createElement('span');title.textContent=c;const count=document.createElement('span');count.className='num';button.append(title,count);
-    button.onclick=()=>{if(settingsOpen)setSettingsView(false,false);category=c;limit=80;render();$('#items').scrollTop=0;button.scrollIntoView({block:'nearest',inline:'nearest'});};
+    button.onclick=()=>{if(settingsOpen)setSettingsView(false,false);if(sourcesOpen)setSourcesView(false,false);category=c;limit=80;render();$('#items').scrollTop=0;button.scrollIntoView({block:'nearest',inline:'nearest'});};
     $('#tabs').append(button);tabs.set(c,{button,count});
   }
   function updateSelected(){
     const shown=filtered.slice(0,limit);$('#items').querySelectorAll('.item').forEach((row,i)=>{const entry=shown[i];const selected=!!entry&&!!previewEntry&&entry.type===previewEntry.type&&entry.value===previewEntry.value;row.classList.toggle('selected',selected);row.querySelector('.resource').setAttribute('aria-pressed',String(selected));});
+  }
+  function cancelReadablePreview(){
+    if(!readableRequest)return;
+    clearTimeout(readableRequest.timer);readableRequest.controller.abort();readableRequest=null;
+  }
+  async function readablePreview(frame,url,token,blocked=false){
+    if(closed||token!==previewToken||peekFrame!==frame||pendingScan||frame.dataset.textPreview)return;
+    if($('#previewfoot').textContent!==frame.dataset.previewStatus)return;
+    let sameOrigin=false;
+    try{sameOrigin=new URL(url).origin===location.origin&&/^https?:/.test(url);}catch{}
+    if(!sameOrigin){if(blocked)$('#previewfoot').textContent='This site blocks the embedded preview. Use Open.';return;}
+    if(!blocked){
+      try{if(frame.contentDocument&&frame.contentDocument.URL!=='about:blank')return;}catch{}
+    }
+    frame.dataset.textPreview='true';
+    cancelReadablePreview();
+    const request={controller:new AbortController(),timer:null,timedOut:false};
+    readableRequest=request;
+    const message='Reading text preview…';$('#previewfoot').textContent=message;
+    const current=()=>!closed&&token===previewToken&&peekFrame===frame&&readableRequest===request&&!pendingScan&&$('#previewfoot').textContent===message;
+    request.timer=setTimeout(()=>{request.timedOut=true;request.controller.abort();},12000);
+    try{
+      const response=await fetch(url,{credentials:'same-origin',mode:'same-origin',redirect:'error',referrerPolicy:'no-referrer',signal:request.controller.signal});
+      if(!response.ok||!/^text\/html(?:\s*;|$)/i.test(response.headers.get('content-type')||''))throw Error('unavailable');
+      const maximum=2*1024*1024;
+      if(Number(response.headers.get('content-length'))>maximum)throw Error('too-large');
+      const reader=response.body.getReader(),decoder=new TextDecoder();
+      let bytes=0,html='';
+      try{
+        while(true){const chunk=await reader.read();if(chunk.done)break;bytes+=chunk.value.byteLength;if(bytes>maximum)throw Error('too-large');html+=decoder.decode(chunk.value,{stream:true});}
+        html+=decoder.decode();
+      }finally{await reader.cancel();}
+      if(!current())return;
+      const template=document.createElement('template');template.innerHTML=html;
+      const title=template.content.querySelector('title')?.textContent||'';
+      template.content.querySelectorAll('script,style,noscript,template,svg,canvas,iframe,object,embed').forEach(node=>node.remove());
+      const page=template.content.querySelector('main,[role="main"],article')||template.content;
+      const text=page.textContent.trim();if(!text)throw Error('unavailable');
+      const preview=document.createElement('div');preview.className='plainpreview';
+      preview.textContent=(title?title+'\n\n':'')+text.slice(0,100000);
+      if(!current())return;
+      frame.hidden=true;canvas.append(preview);
+      $('#previewfoot').textContent=text.length>100000?'Read-only text preview · shortened. Use Open for the full page.':'Read-only text preview · use Open for the full page.';
+    }catch(error){
+      if(current())$('#previewfoot').textContent=request.timedOut?'Text preview timed out. Use Open.':error.message==='too-large'?'Page too large for a text preview. Use Open.':'Preview blocked or unavailable. Use Open.';
+    }finally{clearTimeout(request.timer);request.controller.abort();if(readableRequest===request)readableRequest=null;}
   }
   function closePreview(focus=false){
     if(previewActive)mainHeight=previewReturnHeight;
@@ -737,11 +837,13 @@
         frame.dataset.loading='true';
         frame.addEventListener('load',()=>{
           frame.dataset.loading='false';
-          if(peekFrame===frame)updatePreviewAddress(previewUrl());
+          if(peekFrame===frame){updatePreviewAddress(previewUrl());readablePreview(frame,url,token);}
         });
         canvas.append(frame);
         $('#inspectpage').hidden=false;
         status(discovery?discovery+' · If blocked, use Open.':'Some sites block embedded previews. Use Open if this stays blank.');
+        frame.dataset.previewStatus=$('#previewfoot').textContent;
+        frame.addEventListener('error',()=>readablePreview(frame,url,token,true));
       }else{const p=document.createElement('div');p.className='plainpreview';p.textContent=url;canvas.append(p);status('This resource is available to copy.');}
     }else{
       const p=document.createElement('div');p.className='plainpreview';p.textContent=url;canvas.append(p);status(entry.url?'Link scheme shown as text. Copy it to use elsewhere.':(discovery||'Metadata · a small detail, a little more context.'));
@@ -832,6 +934,12 @@
   resizeHandle($('#grab'),'main',$('.bar'));resizeHandle($('#previewgrab'),'preview',$('.peekbar'));
 
   on($('#settingstab'),'click',()=>setSettingsView(!settingsOpen));
+  on($('#sourcestab'),'click',()=>setSourcesView(!sourcesOpen));
+  on($('#sourcecopy'),'click',()=>copyText(sourceSnapshot));
+  on(window,'securitypolicyviolation',event=>{
+    if(!peekFrame||!previewEntry||!['frame-src','child-src'].includes(event.effectiveDirective))return;
+    try{if(new URL(event.blockedURI).href.split('#')[0]===new URL(previewEntry.value).href.split('#')[0])readablePreview(peekFrame,previewEntry.value,previewToken,true);}catch{}
+  });
   for(const key of ['theme','accent','density'])on($('#setting-'+key),'change',event=>{changePreference(key,event.target.value);savePreferences();});
   for(const key of ['textSize','inspectorHeight','previewHeight']){
     on($('#setting-'+key),'input',event=>changePreference(key,Number(event.target.value)));
@@ -860,7 +968,7 @@
   on($('#close'),'click',closeNous);on($('#minimize'),'click',toggleMini);on($('#maximize'),'click',toggleFull);
   const closeCopy=()=>{$('#copydialog').hidden=true;$('#find').focus({preventScroll:true});};
   on($('#copydialogclose'),'click',closeCopy);on($('#selecttext'),'click',()=>{$('#copytext').focus();$('#copytext').select();$('#copytext').setSelectionRange(0,$('#copytext').value.length);});
-  on(root,'keydown',event=>{if(event.key==='Escape'){event.preventDefault();if(!$('#copydialog').hidden)closeCopy();else if(settingsOpen)setSettingsView(false);else if(previewActive)closePreview(true);else closeNous();}});
+  on(root,'keydown',event=>{if(event.key==='Escape'){event.preventDefault();if(!$('#copydialog').hidden)closeCopy();else if(settingsOpen)setSettingsView(false);else if(sourcesOpen)setSourcesView(false);else if(previewActive)closePreview(true);else closeNous();}});
   on(window,'resize',layout,{passive:true});
   if(viewport){on(viewport,'resize',layout,{passive:true});on(viewport,'scroll',layout,{passive:true});}
   applyPreferences();syncSettings();collect();render();layout();

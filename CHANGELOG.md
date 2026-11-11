@@ -1,3 +1,12 @@
+# Follow-up — Sources and restricted previews (unreleased)
+
+- Add a read-only Sources tab immediately after Settings, with live page HTML, scrolling, syntax coloring and copy support. Preserve the resource view when switching back.
+- Keep working embeds unchanged. For detected blocked same-origin previews, show inert text fetched with normal browser permissions when available; retain Open for the full page.
+- Cancel obsolete work and bound fallback size and duration. Do not execute fetched markup or change website security settings.
+- Keep existing CSS, scanner, inspection/history, layout, gestures and brand assets unchanged; new styling is confined to Sources. Refresh the bookmarklet and preview payloads.
+
+See [validation and limitations](docs/SOURCES_AND_PREVIEWS.md). Physical iPhone Safari remains unverified.
+
 # Nous 1.5 — Trace (release candidate)
 
 - Show retained discovery metadata in Peek's existing footer, with no new controls, markup, styling, scanner, storage, or requests.
