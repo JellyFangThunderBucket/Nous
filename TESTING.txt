@@ -37,10 +37,11 @@ PASSED — AUTOMATED AND STATIC
   are identical. The SVG and PNG brand asset files are byte-for-byte identical.
   Status text and the demonstration's release label are intentionally updated.
 
-FAILED / ENVIRONMENT-BLOCKED
-- A rendered Chromium browser test could not launch in this environment; Chromium
+HISTORICAL 1.4 RELEASE ENVIRONMENT LIMITATION
+- A rendered Chromium browser test could not launch in the original release environment; Chromium
   exited with "socket() failed: Operation not permitted". No screenshot or
-  pixel comparison was produced. No 1.4 automated logic test remains failing.
+  pixel comparison was produced. No 1.4 automated logic test remained failing in that run.
+  This is a historical result; current maintenance validation is below.
 
 UNVERIFIED
 - Physical iPhone Safari, real bookmark installation/execution, real touch and
@@ -101,3 +102,17 @@ Peek, live same-origin scan, restricted cross-origin and blocked-frame cases,
 repeated inspection, Back, rescan, copy and JSON download. Check site restrictions
 and redirects. Measure actual launch/interaction time and compare screenshots on
 the device before considering visual and performance targets verified.
+
+REPOSITORY MAINTENANCE VALIDATION
+Node.js 24.22.1 and Chromium 156 on Linux, November 11, 2026.
+All six non-comparative scripts pass, plus bookmarklet and preview entry-point
+runs (eight passing fixture invocations). Source syntax and exact distribution
+payload equality pass. The refinement script reports 25 checks, zero failures.
+The preservation comparison and benchmark explicitly skip without a separately
+retained Nous 1.3 baseline; they have not been revalidated against 1.3.
+A real Chromium smoke check passes scanning, filtering, settings, close and
+relaunch, without page JavaScript errors. It does not certify iPhone Safari,
+visual parity with 1.3, or browser security behavior on arbitrary websites.
+Test scripts now live under tests/, so the commands above resolve their sources
+correctly. No test logic or application files were changed during cleanup.
+See MAINTENANCE.md and release/README.md for hygiene and packaging evidence.
