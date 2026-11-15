@@ -103,6 +103,8 @@ class Shadow extends Element {
   }
 }
 const pageFixtures={
+  'video':[Object.assign(new Element('video'),{attributes:{src:'/signed.mp4?sig=a%2Bb&x=1#t=3'}})],
+  'link[href],link[imagesrcset]':[Object.assign(new Element('link'),{rel:'preload',attributes:{href:'/signed-font?sig=a%2Bb#subset',as:'font'}})],
   'a[href],area[href]':[
     Object.assign(new Element('a'),{textContent:'First page',attributes:{href:'/first'}}),
     Object.assign(new Element('a'),{textContent:'Second page',attributes:{href:'/second'}})
@@ -148,6 +150,12 @@ function open(){vm.runInContext(source,context);assert(activeHost);return active
   let root=open();
   assert.match(root.querySelector('#total').textContent,/found/);
   const find=root.querySelector('#find');
+  for(const [query,expected] of [['Direct video','https://example.test/signed.mp4?sig=a%2Bb&x=1#t=3'],['Font','https://example.test/signed-font?sig=a%2Bb#subset']]){
+    find.value=query;event(find,'input');
+    root.querySelector('#items').children[0].children[1].click();
+    assert.equal(clipboardText,expected,'Row Copy preserves the full URL');
+  }
+
   find.value='First';event(find,'input');
   assert.equal(root.querySelector('#items').children.length,1);
   root.querySelector('#copy').click();
