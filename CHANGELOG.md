@@ -1,3 +1,31 @@
+# Nous 1.6 — Personalize (release candidate)
+
+- Add Customize controls inside the existing Settings panel using its existing rows and switches. Show or hide optional toolbar, Peek, navigation/window controls and resource tabs immediately.
+- Keep all existing controls visible by default. Settings, All, both Close actions and essential navigation remain available; contextual Peek inspection still requires a supported preview.
+- Treat hidden categories as presentation preferences: collection, All, search, exports, ordering, deduplication and limits are unchanged. Return a hidden selected category to All, including history restoration.
+- Extend existing website-local preferences with sanitized boolean visibility fields. Older values remain compatible; Reset settings restores the complete interface without clearing resources/history.
+- Synchronize source, bookmarklet and embedded preview at version 1.6; preserve existing styles, brands, geometry, gestures, Trace and Sources.
+
+See [validation, screenshots and measured costs](docs/personalize/REPORT.md). Physical iPhone Safari remains unverified; this candidate is not approval for stable publication.
+
+# Follow-up — Sources and restricted previews (unreleased)
+
+- Add a read-only Sources tab immediately after Settings, with live page HTML, scrolling, syntax coloring and copy support. Preserve the resource view when switching back.
+- Keep working embeds unchanged. For detected blocked same-origin previews, show inert text fetched with normal browser permissions when available; retain Open for the full page.
+- Cancel obsolete work and bound fallback size and duration. Do not execute fetched markup or change website security settings.
+- Keep existing CSS, scanner, inspection/history, layout, gestures and brand assets unchanged; new styling is confined to Sources. Refresh the bookmarklet and preview payloads.
+
+See [validation and limitations](docs/SOURCES_AND_PREVIEWS.md). Physical iPhone Safari remains unverified.
+
+# Nous 1.5 — Trace (release candidate)
+
+- Show retained discovery metadata in Peek's existing footer, with no new controls, markup, styling, scanner, storage, or requests.
+- Keep image/media failures, embed warnings, unsupported-link guidance, and inspection feedback in priority. Ignore stale preview callbacks using the existing selection token.
+- Omit unknown discovery metadata. Duplicate resources retain their existing first discovery method; no request-initiator claims are made.
+- Refresh the bookmarklet and preview payloads from the updated readable source; exports identify version 1.5. Brand assets and the existing UI remain unchanged.
+
+See [Trace regression report](release/trace/REPORT.md) for validation and limitations. Physical iPhone Safari remains unverified. This candidate is not the approved final release.
+
 # Nous 1.4 — The Refinement Release
 
 - Report a completed live or HTML-only inspection and its resource count in the

@@ -1,4 +1,4 @@
-NOUS 1.4 — THE REFINEMENT RELEASE
+NOUS 1.6 — PERSONALIZE
 Follow the thread.
 
 INSTALL OR UPDATE ON IPHONE
@@ -6,8 +6,39 @@ INSTALL OR UPDATE ON IPHONE
 2. In Safari, create or edit a bookmark. Name it Nous and replace its URL with
    the copied code. Save it.
 3. Visit a webpage and tap the saved Nous bookmark. To update an existing Nous
-   bookmark, replace its URL with the 1.4 code; the older installed bookmark will
+   bookmark, replace its URL with the 1.6 code; the older installed bookmark will
    not update itself. Running Nous a second time closes it.
+
+TRACE — HOW NOUS FOUND IT
+Peek's existing footer can show "Discovered via img.currentSrc" or another
+retained discovery method. No extra action is needed. Trace reads existing
+resource metadata; it adds no scans, requests, observers, or storage. Duplicate
+URLs report the first method retained in that category. Missing or unrecognized
+metadata is omitted. Preview warnings and inspection feedback take priority.
+This describes discovery, not the original creator, network initiator, script
+call stack, or complete request chain. See release/trace/REPORT.md for checks
+and unverified device behavior.
+
+PERSONALIZE
+Settings > Customize controls lets you show or hide existing toolbar actions,
+Peek copy/inspection controls, Sources, window tools and resource tabs. Every
+option starts visible. Hiding a tab does not stop scanning; its entries remain
+in All, search and matching exports. Settings, All and critical navigation stay
+available. Reset settings restores the original visibility configuration.
+Preferences save per website when storage is available; they are not shared
+across unrelated domains. See docs/personalize/REPORT.md for tests and limits.
+
+SOURCES
+Sources, immediately to the right of Settings, shows the current webpage's live
+HTML as read-only text, with scrolling and an upper-right copy button. Reopen
+the tab to refresh its snapshot. It excludes Nous itself and needs no request.
+
+RESTRICTED PREVIEWS
+Working embedded pages keep their existing behavior. Sites such as GitHub can
+forbid embedding. Peek can show a safe, read-only text preview for blocked links
+on the same website when normal browser permissions allow reading their HTML.
+It does not execute the fetched page. Cross-origin restrictions, redirects,
+errors or oversized pages may still require Open. See docs/SOURCES_AND_PREVIEWS.md.
 
 WHAT INSPECTION DOES
 Nous opens over the page and lists browser-visible resources in the top panel.

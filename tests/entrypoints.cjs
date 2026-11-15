@@ -4,7 +4,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 require('node:events').setMaxListeners(0);
 
-const base = __dirname;
+const base = path.join(__dirname,'..');
 const entry = process.env.NOUS_ENTRY || 'source';
 let source = fs.readFileSync(process.env.NOUS_SOURCE || path.join(base,'Nous_Source.js'),'utf8');
 if(entry==='bookmarklet')source=fs.readFileSync(path.join(base,'Nous_Bookmarklet.txt'),'utf8').trim().slice('javascript:'.length);
@@ -168,7 +168,7 @@ function open(){vm.runInContext(source,context);assert(activeHost);return active
   root.querySelector('#save').click();
   assert.equal(downloads.at(-1).name,'nous-resources.json');
   const exported=JSON.parse(await blobs.get(downloads.at(-1).url).text());
-  assert.equal(exported.version,'1.4');
+  assert.equal(exported.version,'1.6');
   assert.equal(exported.page,'https://example.test/root');
   assert.equal(exported.entries.length,1);
   assert.equal(exported.entries[0].value,'https://example.test/first');

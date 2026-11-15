@@ -1,0 +1,54 @@
+{
+  "baselineCommit": "ef3639981fd9e49cc8c416002f43ec7b4b436f2c",
+  "runtime": "Node.js 24.22.1; Chromium 156; Linux",
+  "sizes": {
+    "Nous_Source.js": {
+      "baselineBytes": 65699,
+      "traceBytes": 66324,
+      "differenceBytes": 625
+    },
+    "Nous_Bookmarklet.txt": {
+      "baselineBytes": 62036,
+      "traceBytes": 62623,
+      "differenceBytes": 587
+    },
+    "Nous_Preview.html": {
+      "baselineBytes": 137437,
+      "traceBytes": 138672,
+      "differenceBytes": 1235
+    },
+    "bookmarkletGzip": {
+      "baselineBytes": 17814,
+      "traceBytes": 17968,
+      "differenceBytes": 154
+    }
+  },
+  "scanner": {
+    "method": "Synthetic Node document; 21 first-call samples and 61 alternating warmed samples (20 warmups), medians; excludes UI startup, browser layout, and iPhone timings",
+    "results": [
+      {
+        "entries": 1000,
+        "baselineColdMedianMs": 2.7067899999999554,
+        "updatedColdMedianMs": 3.194744999999955,
+        "baselineWarmMedianMs": 1.4902060000000006,
+        "updatedWarmMedianMs": 1.760046999999986,
+        "baselinePeakSetEntries": 1002,
+        "updatedPeakSetEntries": 1002
+      },
+      {
+        "entries": 12000,
+        "baselineColdMedianMs": 25.022704999995767,
+        "updatedColdMedianMs": 20.9932919999992,
+        "baselineWarmMedianMs": 18.87800900000002,
+        "updatedWarmMedianMs": 20.12054600000556,
+        "baselinePeakSetEntries": 2500,
+        "updatedPeakSetEntries": 2500
+      }
+    ]
+  },
+  "peek": {
+    "method": "Synthetic image Peek; 20 warmup batches and 61 alternating batches of 1,000; excludes browser layout, network and iPhone",
+    "baselineMedianMsPerPreview": 0.0034366899999999988,
+    "traceMedianMsPerPreview": 0.0036675389999999766
+  }
+}

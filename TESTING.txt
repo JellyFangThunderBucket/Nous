@@ -37,10 +37,11 @@ PASSED — AUTOMATED AND STATIC
   are identical. The SVG and PNG brand asset files are byte-for-byte identical.
   Status text and the demonstration's release label are intentionally updated.
 
-FAILED / ENVIRONMENT-BLOCKED
-- A rendered Chromium browser test could not launch in this environment; Chromium
+HISTORICAL 1.4 RELEASE ENVIRONMENT LIMITATION
+- A rendered Chromium browser test could not launch in the original release environment; Chromium
   exited with "socket() failed: Operation not permitted". No screenshot or
-  pixel comparison was produced. No 1.4 automated logic test remains failing.
+  pixel comparison was produced. No 1.4 automated logic test remained failing in that run.
+  This is a historical result; current maintenance validation is below.
 
 UNVERIFIED
 - Physical iPhone Safari, real bookmark installation/execution, real touch and
@@ -104,17 +105,69 @@ the device before considering visual and performance targets verified.
 
 VIDEO/FONT DISCOVERY UPDATE
 Run node build.cjs to reproduce the existing line-joined bookmarklet and replace
-both embedded preview payloads from Nous_Source.js. Run node media-fonts.cjs
-and node entrypoints.cjs (also NOUS_ENTRY=bookmarklet and NOUS_ENTRY=preview).
+both embedded preview payloads from Nous_Source.js. Run node tests/media-fonts.cjs
+and node tests/entrypoints.cjs (also NOUS_ENTRY=bookmarklet and NOUS_ENTRY=preview).
 The focused fixture verifies hidden/direct videos, sources, extensionless player
 URLs and MIME evidence, HLS/DASH, segments, audio/poster rejection, unusable and
 observed blob state, signed URLs, CSS-relative fonts, imported CSS, font preloads,
 extensionless fonts, timing-only fonts, blocked CSSOM, local-only declarations,
 and merged observations. Entry-point checks assert exact row Copy URLs for both
 video and font results across all three packaged entry points.
-Existing scanner, settings/touch, history, refinement and package checks passed
-using a temporary tests/ layout because those legacy tests default to a parent
-directory while this checkout stores them at its root.
+Existing checks were initially run with a temporary tests/ layout. After
+integration with current main, the repository tests/ paths are used directly.
 Physical iPhone Safari still needs installation, long URL wrapping, clipboard,
 hidden/carousel sources on real sites, CSSOM restrictions and explicit Peek/Open
 playback checks (especially HLS, DASH, codecs and session-only blobs).
+REPOSITORY MAINTENANCE VALIDATION
+Node.js 24.22.1 and Chromium 156 on Linux, November 11, 2026.
+All six non-comparative scripts pass, plus bookmarklet and preview entry-point
+runs (eight passing fixture invocations). Source syntax and exact distribution
+payload equality pass. The refinement script reports 25 checks, zero failures.
+The preservation comparison and benchmark explicitly skip without a separately
+retained Nous 1.3 baseline; they have not been revalidated against 1.3.
+A real Chromium smoke check passes scanning, filtering, settings, close and
+relaunch, without page JavaScript errors. It does not certify iPhone Safari,
+visual parity with 1.3, or browser security behavior on arbitrary websites.
+Test scripts now live under tests/, so the commands above resolve their sources
+correctly. No test logic or application files were changed during cleanup.
+See MAINTENANCE.md and release/README.md for hygiene and packaging evidence.
+
+NOUS 1.5 — TRACE CANDIDATE
+The earlier sections are historical 1.4 evidence. Current 1.5 checks, exact
+stable comparisons, measurements and limits are in release/trace/REPORT.md.
+Run the original commands above plus:
+
+  node tests/trace.cjs
+  NOUS_ENTRY=bookmarklet node tests/trace.cjs
+  NOUS_ENTRY=preview node tests/trace.cjs
+
+The preserved 1.4 UI, scanner, inspection and cleanup comparisons and optional
+rendered checks use NOUS_BASELINE; see release/trace/README.md. Trace adds no
+scanning, requests or UI elements. Physical iPhone Safari remains unverified.
+Use python3 release/trace/package.py for the 1.5 candidate; release/package.py
+and the earlier release files remain historical 1.4 artifacts.
+
+SOURCES AND RESTRICTED PREVIEWS — UNRELEASED FOLLOW-UP
+See docs/SOURCES_AND_PREVIEWS.md for current commands, controlled browser checks,
+unchanged-component comparisons, and device/live-GitHub validation limits.
+The new browser suite is node tests/sources-preview-browser.cjs.
+Historical preservation suites assume a frozen UI; this requested addition
+intentionally adds only Sources markup/styles and its tab. No new application
+version or final release is published by this follow-up.
+
+NOUS 1.6 — PERSONALIZE CANDIDATE
+Current results, exact default screenshot comparisons, measurements and rollback
+are in docs/personalize/REPORT.md. The baseline is maintained 1.5 commit 71ac52b.
+New suites: node tests/personalize.cjs and node tests/personalize-browser.cjs.
+Use NOUS_BASELINE=/path/to/1.5/Nous_Source.js for personalize-preservation.cjs
+and personalize-benchmark.cjs. Existing historical whole-UI comparisons retain
+their original contracts and explicitly skip without their required baselines.
+Use release/personalize/package.py for the 1.6 candidate. No historical release
+notes or artifacts were changed. Physical iPhone Safari testing remains required
+before a confident stable mobile release claim.
+
+PR integration with current main: preserved Trace, Sources/restricted previews
+and Personalize. Existing Node suites (including Trace and Personalize), all
+three copy entry points and focused media/font fixtures pass. Chromium Trace
+(320/390 widths), Sources/restricted preview and 47 Personalize browser scenarios
+pass; no baseline screenshot comparison or physical iPhone check was performed.

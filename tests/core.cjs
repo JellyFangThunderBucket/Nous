@@ -103,7 +103,7 @@ let activeToken=0;
 const nodes={};
 const makeNode=tag=>({tagName:tag,children:[],attrs:{},dataset:{},addEventListener(){},append(...children){this.children.push(...children)},setAttribute(name,value){this.attrs[name]=value}});
 const previewContext=vm.createContext({
- previewActive:false,previewReturnHeight:600,mainHeight:600,previewEntry:null,previewToken:0,closed:false,returnFocus:null,
+ preferences:{visibility:{inspectpage:true}},previewActive:false,previewReturnHeight:600,mainHeight:600,previewEntry:null,previewToken:0,closed:false,returnFocus:null,
  vh:()=>844,releaseMedia(){previewContext.previewToken++;previewContext.canvas.children=[];},
  canvas:makeNode('canvas'),document:{createElement:makeNode},icon:()=>'',layout(){},updateSelected(){},
  $:s=>nodes[s]||(nodes[s]={})

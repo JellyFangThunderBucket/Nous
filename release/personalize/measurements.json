@@ -1,0 +1,82 @@
+{
+  "baselineCommit": "71ac52b55ff07253ce96517b7be8691df040ff7f",
+  "runtime": "Node.js 24.22.1; Chromium 156; Linux",
+  "sizes": {
+    "Nous_Source.js": {
+      "baselineBytes": 73903,
+      "candidateBytes": 80004,
+      "differenceBytes": 6101
+    },
+    "Nous_Bookmarklet.txt": {
+      "baselineBytes": 69700,
+      "candidateBytes": 75547,
+      "differenceBytes": 5847
+    },
+    "Nous_Preview.html": {
+      "baselineBytes": 153574,
+      "candidateBytes": 166062,
+      "differenceBytes": 12488
+    },
+    "bookmarkletGzip": {
+      "baselineBytes": 19802,
+      "candidateBytes": 20571,
+      "differenceBytes": 769
+    }
+  },
+  "scanner": {
+    "method": "Synthetic Node document; 21 first-call samples and 61 alternating warmed samples (20 warmups), medians; excludes UI startup, browser layout, and iPhone timings",
+    "results": [
+      {
+        "entries": 1000,
+        "baselineColdMedianMs": 3.0119750000000067,
+        "updatedColdMedianMs": 3.065131000000008,
+        "baselineWarmMedianMs": 1.5657750000000021,
+        "updatedWarmMedianMs": 1.7736209999999915,
+        "baselinePeakSetEntries": 1002,
+        "updatedPeakSetEntries": 1002
+      },
+      {
+        "entries": 12000,
+        "baselineColdMedianMs": 18.514931000000615,
+        "updatedColdMedianMs": 18.08000699999957,
+        "baselineWarmMedianMs": 15.411311000000296,
+        "updatedWarmMedianMs": 15.478974000000107,
+        "baselinePeakSetEntries": 2500,
+        "updatedPeakSetEntries": 2500
+      }
+    ]
+  },
+  "peek": {
+    "method": "Synthetic image Peek; 20 warmup batches and 61 alternating batches of 1,000; excludes browser layout, network and iPhone",
+    "baselineMedianMsPerPreview": 0.003485037000000034,
+    "traceMedianMsPerPreview": 0.0034814309999999862
+  },
+  "visibility": {
+    "method": "Synthetic cached UI nodes; 20 warmups and 61 alternating batches of 1000 preference applications; excludes DOM layout, rendering and real storage latency",
+    "baselineMedianMsPerApply": 0.00010228899999998475,
+    "personalizeMedianMsPerApply": 0.002651233999999988,
+    "personalizeMedianMsPerToggleIncludingSanitizeSyncAndSave": 0.02398688400000003
+  },
+  "defaultVisualComparisons": {
+    "comparisons": 6,
+    "differentPixels": 0,
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "viewports": [
+      [
+        390,
+        844
+      ],
+      [
+        320,
+        420
+      ],
+      [
+        280,
+        320
+      ]
+    ]
+  }
+}

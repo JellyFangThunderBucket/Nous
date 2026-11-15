@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const source=fs.readFileSync(__dirname+'/Nous_Source.js','utf8');
+const source=fs.readFileSync(__dirname+'/../Nous_Source.js','utf8');
 const section=source.slice(source.indexOf('  function scanDocument('),source.indexOf('  function livePage('));
 const context=vm.createContext({URL,Set,Map});vm.runInContext(section,context);
 function el(tag,attrs={},extra={}){return {tagName:tag.toUpperCase(),rel:attrs.rel||'',textContent:'',attributes:Object.entries(attrs).map(([name,value])=>({name,value})),getAttribute:n=>attrs[n]||null,closest:n=>attrs.parent===n?{}:null,...extra};}
