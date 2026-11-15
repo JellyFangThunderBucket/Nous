@@ -70,3 +70,16 @@ large HTML-only responses remain limitations; see AUDIT.md and TESTING.txt.
 
 Physical iPhone Safari verification was not available for this release. Test the
 bookmarklet on the intended device and important sites before relying on it.
+
+VIDEO URLS AND FONT FILES
+Tap Video for direct candidates and streaming manifests. Labels distinguish
+playback unverified, observed page media, and Session only blob URLs. A manifest
+requires a compatible player; an observed resource is not a playback guarantee.
+In Styles, search font for concrete font-file URLs, format and declared family,
+weight or style. Font timing observations do not prove that a font rendered.
+Row Copy copies just the complete URL, including signatures and fragments.
+Discovery reads existing DOM, JSON/configuration text, accessible CSSOM/imports,
+accessible embedded documents (up to two levels and 20 frames per document),
+and resource timing. It does not load hidden content or fetch/verify assets.
+Blocked stylesheet rules and embedded documents are skipped. Player state that
+is private to script closures, inaccessible frames or DRM remains unavailable.

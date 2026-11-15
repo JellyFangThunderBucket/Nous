@@ -101,3 +101,20 @@ Peek, live same-origin scan, restricted cross-origin and blocked-frame cases,
 repeated inspection, Back, rescan, copy and JSON download. Check site restrictions
 and redirects. Measure actual launch/interaction time and compare screenshots on
 the device before considering visual and performance targets verified.
+
+VIDEO/FONT DISCOVERY UPDATE
+Run node build.cjs to reproduce the existing line-joined bookmarklet and replace
+both embedded preview payloads from Nous_Source.js. Run node media-fonts.cjs
+and node entrypoints.cjs (also NOUS_ENTRY=bookmarklet and NOUS_ENTRY=preview).
+The focused fixture verifies hidden/direct videos, sources, extensionless player
+URLs and MIME evidence, HLS/DASH, segments, audio/poster rejection, unusable and
+observed blob state, signed URLs, CSS-relative fonts, imported CSS, font preloads,
+extensionless fonts, timing-only fonts, blocked CSSOM, local-only declarations,
+and merged observations. Entry-point checks assert exact row Copy URLs for both
+video and font results across all three packaged entry points.
+Existing scanner, settings/touch, history, refinement and package checks passed
+using a temporary tests/ layout because those legacy tests default to a parent
+directory while this checkout stores them at its root.
+Physical iPhone Safari still needs installation, long URL wrapping, clipboard,
+hidden/carousel sources on real sites, CSSOM restrictions and explicit Peek/Open
+playback checks (especially HLS, DASH, codecs and session-only blobs).

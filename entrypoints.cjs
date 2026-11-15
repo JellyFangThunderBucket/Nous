@@ -4,7 +4,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 require('node:events').setMaxListeners(0);
 
-const base = path.join(__dirname,'..');
+const base = __dirname;
 const entry = process.env.NOUS_ENTRY || 'source';
 let source = fs.readFileSync(process.env.NOUS_SOURCE || path.join(base,'Nous_Source.js'),'utf8');
 if(entry==='bookmarklet')source=fs.readFileSync(path.join(base,'Nous_Bookmarklet.txt'),'utf8').trim().slice('javascript:'.length);
@@ -103,6 +103,8 @@ class Shadow extends Element {
   }
 }
 const pageFixtures={
+  'video':[Object.assign(new Element('video'),{attributes:{src:'/signed.mp4?sig=a%2Bb&x=1#t=3'}})],
+  'link[href],link[imagesrcset]':[Object.assign(new Element('link'),{rel:'preload',attributes:{href:'/signed-font?sig=a%2Bb#subset',as:'font'}})],
   'a[href],area[href]':[
     Object.assign(new Element('a'),{textContent:'First page',attributes:{href:'/first'}}),
     Object.assign(new Element('a'),{textContent:'Second page',attributes:{href:'/second'}})
@@ -148,6 +150,12 @@ function open(){vm.runInContext(source,context);assert(activeHost);return active
   let root=open();
   assert.match(root.querySelector('#total').textContent,/found/);
   const find=root.querySelector('#find');
+  for(const [query,expected] of [['Direct video','https://example.test/signed.mp4?sig=a%2Bb&x=1#t=3'],['Font','https://example.test/signed-font?sig=a%2Bb#subset']]){
+    find.value=query;event(find,'input');
+    root.querySelector('#items').children[0].children[1].click();
+    assert.equal(clipboardText,expected,'Row Copy preserves the full URL');
+  }
+
   find.value='First';event(find,'input');
   assert.equal(root.querySelector('#items').children.length,1);
   root.querySelector('#copy').click();

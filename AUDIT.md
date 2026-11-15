@@ -37,3 +37,10 @@ its limits and the reason for each change or non-change.
 
 No code from these projects was copied. See TESTING.txt for measured results,
 failed environment checks and unverified device behavior.
+
+Video/font update: discovery remains local and read-only. Accessible child-frame
+DOM is now inspected to a depth of two with at most 20 frames per document; no
+frame is navigated or loaded for discovery. CSSOM failures are isolated per sheet.
+Literal JSON/configuration text is parsed without evaluation. No playback probe
+or asset fetch is used. Existing 2,500-result caps remain in effect. Timing
+observations prove only that the browser recorded a resource.

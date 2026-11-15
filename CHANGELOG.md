@@ -24,3 +24,12 @@
 The interface markup, styling, icons, panel geometry, touch implementation,
 settings, categories and brand assets remain unchanged. Browser and device
 verification limits are recorded in TESTING.txt. No external code was added.
+
+## Video and font URL discovery
+- Discover video candidates and manifests from existing DOM, JSON/configuration
+  text, accessible frames and timing. Exclude segments and audio-only sources;
+  show evidence-based status and session-only blobs.
+- Discover font-file URLs from accessible CSS/imports, preloads and timing in
+  Styles. Preserve CSS bases, declaration details and merged observations.
+- Keep full video/font URLs visible and row Copy exact. Regenerate bookmarklet
+  and preview with build.cjs; add focused discovery and copy regression checks.
