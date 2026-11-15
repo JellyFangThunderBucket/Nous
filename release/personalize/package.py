@@ -15,7 +15,7 @@ TESTS = ['core', 'discovery', 'settings-touch', 'inspection-history', 'refinemen
          'trace', 'personalize', 'preservation', 'benchmark', 'trace-preservation',
          'trace-benchmark', 'sources-preservation', 'personalize-preservation', 'personalize-benchmark']
 BROWSER_TESTS = ['trace-browser', 'sources-preview-browser', 'personalize-browser']
-FILES = APPLICATION + ['README.md', 'README.txt', 'TESTING.txt', 'AUDIT.md', 'CHANGELOG.md',
+FILES = APPLICATION + ['README.md', 'TESTING.txt', 'AUDIT.md', 'CHANGELOG.md',
     'MAINTENANCE.md', 'docs/SOURCES_AND_PREVIEWS.md', 'docs/personalize/REPORT.md',
     'release/README.md', 'release/NOTES.md', 'release/FILES.sha256', 'release/package.py',
     'release/trace/README.md', 'release/trace/NOTES.md', 'release/trace/REPORT.md',

@@ -13,7 +13,7 @@ APPLICATION = ['Nous_Source.js', 'Nous_Bookmarklet.txt', 'Nous_Preview.html',
                'Nous_Brand.svg', 'Nous_Brand.png']
 TESTS = ['core', 'discovery', 'settings-touch', 'inspection-history',
          'refinement', 'entrypoints', 'preservation', 'benchmark']
-FILES = APPLICATION + ['README.md', 'README.txt', 'TESTING.txt', 'AUDIT.md',
+FILES = APPLICATION + ['README.md', 'TESTING.txt', 'AUDIT.md',
     'CHANGELOG.md', 'MAINTENANCE.md', 'release/README.md', 'release/NOTES.md',
     'release/FILES.sha256', 'release/package.py'] + ['tests/' + t + '.cjs' for t in TESTS]
 
