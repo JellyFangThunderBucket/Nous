@@ -61,3 +61,14 @@ verification limits are recorded in TESTING.txt. No external code was added.
   Styles. Preserve CSS bases, declaration details and merged observations.
 - Keep full video/font URLs visible and row Copy exact. Regenerate bookmarklet
   and preview with build.cjs; add focused discovery and copy regression checks.
+
+## Reveal on page
+- Add a direct Reveal action beside row Copy for HTTP(S) and session URL entries.
+- Briefly highlight matching page elements, cycle shared references, and label
+  hidden, clipped/off-screen, declaration-only, changed and removed references.
+- Keep scrolling explicit, preserve inspection/Peek state, and support accessible
+  embedded documents without loading or moving frames.
+- Create the floating controls on demand and release highlight tracking after
+  2.4 seconds; no new dependencies, observers or discovery requests.
+- Rebuild the bookmarklet and embedded preview. Validation, measurements and
+  remaining device checks: docs/reveal/REPORT.md.

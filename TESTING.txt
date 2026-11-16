@@ -171,3 +171,24 @@ and Personalize. Existing Node suites (including Trace and Personalize), all
 three copy entry points and focused media/font fixtures pass. Chromium Trace
 (320/390 widths), Sources/restricted preview and 47 Personalize browser scenarios
 pass; no baseline screenshot comparison or physical iPhone check was performed.
+
+REVEAL ON PAGE - UNRELEASED FOLLOW-UP
+Build the installable bookmarklet and both embedded preview payloads:
+
+  node build.cjs
+  node tests/core.cjs
+  node tests/reveal.cjs
+  node tests/reveal-browser.cjs
+  NOUS_ENTRY=bookmarklet node tests/reveal-browser.cjs
+  NOUS_ENTRY=preview node tests/reveal-browser.cjs
+
+Compare the normal scanner and measure controlled Chromium launch/matching cost:
+
+  NOUS_BASELINE=/path/to/pre-reveal/Nous_Source.js node tests/reveal.cjs
+  NOUS_BASELINE=/path/to/pre-reveal/Nous_Source.js node tests/reveal-benchmark.cjs
+
+The pre-Reveal baseline is main commit 197cb85. Reveal tests use the existing
+Playwright/Chromium test tooling; these are not application dependencies.
+See docs/reveal/REPORT.md for coverage, bounds, sizes, measured startup cost,
+known limits and required physical iPhone Safari checks. Historical candidate
+release manifests remain unchanged; no tag or stable release is published.
