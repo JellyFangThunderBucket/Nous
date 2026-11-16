@@ -44,3 +44,22 @@ frame is navigated or loaded for discovery. CSSOM failures are isolated per shee
 Literal JSON/configuration text is parsed without evaluation. No playback probe
 or asset fetch is used. Existing 2,500-result caps remain in effect. Timing
 observations prove only that the browser recorded a resource.
+
+Reveal on page update: the existing scanner is byte-identical to main at
+197cb85. Reveal performs a separate, bounded DOM search only on an explicit row
+action. Exact normalized URL equality preserves queries, encoding and fragments;
+it describes references rather than claiming the resource rendered. Highlighting
+uses an overlay in Nous's existing shadow root. Page elements are not restyled,
+unhidden, played or clicked. Accessible frames are read through normal DOM access;
+blocked frames are skipped. No asset, stylesheet or player request is initiated.
+Scroll to is a separate user action and may activate the page's own lazy loading
+or scroll handlers. The optional live inspected frame is displayed through
+Nous-only CSS without moving, reloading or changing its document.
+
+Search caps: 20,000 elements across documents, 100 matched elements, 20 accessible
+child frames, depth two, and 6,000 characters per inspected attribute. The UI marks
+node/match/frame/depth limits. Highlight scroll/resize listeners and pending
+animation frames are stopped after 2.4 seconds or on exit; Escape/page navigation
+listeners remain only during the explicit Reveal session. Closing Nous aborts
+the session and stale row callbacks cannot restart it. No observers or polling
+were added. See docs/reveal/REPORT.md for evidence and limitations.

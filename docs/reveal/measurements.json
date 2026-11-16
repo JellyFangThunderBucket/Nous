@@ -1,0 +1,28 @@
+{
+  "method": "Headless Chromium, 390x844; 5 warmups and 21 alternating launch samples, 1000 links, includes synchronous layout; on-demand matching has 5 warmups and 21 samples. Not iPhone/device timings.",
+  "scannerByteIdentical": true,
+  "baseline": {
+    "bookmarkletBytes": 82961,
+    "gzipBytes": 23235
+  },
+  "reveal": {
+    "bookmarkletBytes": 96580,
+    "gzipBytes": 27073
+  },
+  "baselineLaunchMedianMs": 48.5,
+  "revealLaunchMedianMs": 57.89999999990687,
+  "matching": [
+    {
+      "fixtureElements": 1000,
+      "medianMs": 1.3000000000465661,
+      "matches": 1,
+      "limited": false
+    },
+    {
+      "fixtureElements": 20000,
+      "medianMs": 33,
+      "matches": 0,
+      "limited": true
+    }
+  ]
+}

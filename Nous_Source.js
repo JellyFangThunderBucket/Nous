@@ -36,6 +36,7 @@
     grid:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
     check:'<path d="m5 12 4 4L19 6"/>',
     thread:'<path d="M4 18V7a3 3 0 0 1 5.3-1.9l6.4 13.8A3 3 0 0 0 21 17V6"/>',
+    target:'<circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
     eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>'
   };
   const icon = (name, cls='') => '<svg class="icon '+cls+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(icons[name]||icons.link)+'</svg>';
@@ -240,6 +241,23 @@
     .sheet.micro.has-history:not(.minimized) .pagecontext{display:flex}
     #inspectpage{white-space:nowrap;min-height:34px;color:var(--accent-ink);background:var(--accent-soft)}
     @media(max-width:359px){.peekbar{gap:4px}.peekbar .iconbutton{width:29px}.peekbar .actionpill{padding:0 6px}}
+    .revealitem{width:48px;color:var(--accent-ink);font-size:10px;font-weight:550}
+    .dock.revealing .sheet,.dock.revealing:not(.revealing-frame) .preview{visibility:hidden;pointer-events:none}
+    .dock.revealing-frame #viewer{display:flex!important;inset:0!important;height:auto!important;width:100%;transform:none;border:0;border-radius:0}
+    .dock.revealing-frame .preview>:not(.previewcanvas),.dock.revealing-frame .previewcanvas>:not(.reveal-document){display:none!important}
+    .dock.revealing-frame .reveal-document{display:block!important}
+    .revealring{position:absolute;z-index:7;pointer-events:none;border:2px solid var(--accent);border-radius:4px;box-shadow:0 0 0 3px var(--accent-soft),0 0 0 9999px #10271e18}
+    .revealhud{position:absolute;z-index:8;pointer-events:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:min(calc(100% - 20px),620px);padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#f5faf7;box-shadow:0 8px 32px #10271e26;color:var(--text)}
+    .revealheading,.revealcontrols{display:flex;align-items:center;gap:8px}
+    .revealheading strong{flex:1;font-size:12px;color:var(--accent-ink)}
+    .revealhud .actionpill{min-height:40px;padding:0 12px}
+    #revealagain{width:40px;height:40px;color:var(--accent-ink)}
+    #revealurl{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--muted);margin:4px 0}
+    #revealstatus{font-size:11px;line-height:1.5;overflow-wrap:anywhere;margin:6px 0 10px}
+    #revealcount{font-size:11px;font-variant-numeric:tabular-nums;min-width:60px;text-align:center}
+    #revealjump{margin-left:auto}
+    .dock[data-theme="dark"] .revealhud{background:#242f29}
+    @media(max-height:420px){.revealhud{padding:6px 10px}.revealhud .actionpill{min-height:36px}#revealagain{height:32px}#revealurl{display:none}#revealstatus{margin:3px 0 6px;font-size:10px}}
   </style>
   <div class="dock">
     <section class="sheet" role="region" aria-label="Nous resource inspector">
@@ -457,7 +475,7 @@
     toastTimer=later(()=>{$('#toast').hidden=true;},2200);
   };
   function closeNous(){
-    if(closed)return;closed=true;controller.abort();
+    if(closed)return;endReveal(false);closed=true;controller.abort();
     timers.forEach(id=>clearTimeout(id));downloads.forEach(url=>URL.revokeObjectURL(url));
     releaseMedia();host.remove();
     if(previousFocus&&previousFocus.isConnected&&typeof previousFocus.focus==='function')previousFocus.focus({preventScroll:true});
@@ -857,7 +875,182 @@
   }
 
   function domain(entry){try{return new URL(entry.value).hostname.replace(/^www\./,'')||entry.source;}catch{return entry.source;}}
+  function revealReferences(el,url){
+    const methods=[];
+    const same=value=>{try{return !!value&&new URL(value,el.ownerDocument.baseURI).href===url;}catch{return false;}};
+    const tag=el.localName;
+    if(/^(img|video|audio)$/.test(tag)&&same(el.currentSrc))methods.push('currentSrc');
+    for(const attr of el.attributes){
+      if(attr.value.length>6000)continue;
+      if(/^(href|src|action|poster|data)$/.test(attr.name)||(/^data-/.test(attr.name)&&(/src|url|href|poster|video|image|movie|file|stream|background|original|lazy/i.test(attr.name)||/^(https?:|blob:|\/|\.\.?\/)/i.test(attr.value)))){
+        if(same(attr.value))methods.push(tag==='source'?'source['+attr.name+']':attr.name);
+      }
+      if(/^(srcset|data-srcset)$/.test(attr.name)){
+        /* Use the scanner's srcset token boundaries, including data URL exclusion. */
+        let position=0;
+        while(position<attr.value.length){
+          while(position<attr.value.length&&/[\s,]/.test(attr.value[position]))position++;
+          const start=position;while(position<attr.value.length&&!/\s/.test(attr.value[position]))position++;
+          let value=attr.value.slice(start,position);
+          if(/,$/.test(value))value=value.replace(/,+$/,'');else while(position<attr.value.length&&attr.value[position]!==',')position++;
+          if(same(value)){methods.push(tag==='source'?'source['+attr.name+']':attr.name);break;}
+        }
+      }
+      if(attr.name==='style')for(const match of attr.value.matchAll(/url\(\s*(['"]?)(.*?)\1\s*\)/gi))if(same(match[2])){methods.push('style url()');break;}
+    }
+    return methods;
+  }
+  function revealElement(el){
+    if(el.localName==='source')return el.closest('video,audio')||el.closest('picture')?.querySelector('img')||el;
+    return el;
+  }
+  function findRevealMatches(doc,url,frames=[]){
+    const matches=[],seen=new Map();let visited=0,frameCount=0,limited=false;
+    function walk(page,chain,depth){
+      const walker=page.createTreeWalker(page.documentElement,1);
+      for(let el=walker.currentNode;el;el=walker.nextNode()){
+        if(++visited>20000||matches.length>=100){limited=true;break;}
+        if(el===host)continue;
+        const methods=revealReferences(el,url);
+        if(methods.length){
+          const element=revealElement(el),previous=seen.get(element);
+          if(previous)previous.references.push(el);
+          else{const match={element,references:[el],frames:chain};seen.set(element,match);matches.push(match);}
+        }
+        if(/^(iframe|frame)$/.test(el.localName)&&depth<2&&frameCount<20){
+          let child;try{child=el.contentDocument;}catch{continue;}
+          if(child?.documentElement){frameCount++;walk(child,[...chain,el],depth+1);}
+        }else if(/^(iframe|frame)$/.test(el.localName))limited=true;
+      }
+    }
+    walk(doc,frames,0);return {matches,limited};
+  }
+  function revealGeometry(match){
+    const el=match.element;
+    if(!el.isConnected)return {state:'Removed from page'};
+    if(/^(script|style|link|meta|head|base|source)$/.test(el.localName))return {state:'Declaration only'};
+    function bounds(node){
+      if(!node.getClientRects().length)return null;
+      let {left,top,right,bottom}=node.getBoundingClientRect();
+      if(right<=left||bottom<=top)return null;
+      for(let parent=node;parent;parent=parent.parentElement){
+        const style=parent.ownerDocument.defaultView.getComputedStyle(parent);
+        if(style.visibility==='hidden'||style.visibility==='collapse'||Number(style.opacity)===0||style.contentVisibility==='hidden')return null;
+        if(parent!==node&&/hidden|clip|scroll|auto/.test(style.overflowX+' '+style.overflowY)){
+          const rect=parent.getBoundingClientRect(),sx=parent.offsetWidth?rect.width/parent.offsetWidth:1,sy=parent.offsetHeight?rect.height/parent.offsetHeight:1;
+          const x=rect.left+parent.clientLeft*sx,y=rect.top+parent.clientTop*sy;
+          if(/hidden|clip|scroll|auto/.test(style.overflowX)){left=Math.max(left,x);right=Math.min(right,x+parent.clientWidth*sx);}
+          if(/hidden|clip|scroll|auto/.test(style.overflowY)){top=Math.max(top,y);bottom=Math.min(bottom,y+parent.clientHeight*sy);}
+        }
+      }
+      return {left,top,right,bottom};
+    }
+    const box=bounds(el),frameBoxes=match.frames.map(bounds);
+    if(!box||frameBoxes.some(box=>!box))return {state:'Hidden'};
+    let {left,top,right,bottom}=box;
+    for(let index=match.frames.length-1;index>=0;index--){
+      const frame=match.frames[index],clip=frameBoxes[index];
+      const rect=frame.getBoundingClientRect(),sx=frame.offsetWidth?rect.width/frame.offsetWidth:1,sy=frame.offsetHeight?rect.height/frame.offsetHeight:1;
+      const x=rect.left+frame.clientLeft*sx,y=rect.top+frame.clientTop*sy;
+      left=x+left*sx;right=x+right*sx;top=y+top*sy;bottom=y+bottom*sy;
+      left=Math.max(left,x,clip.left);top=Math.max(top,y,clip.top);right=Math.min(right,x+frame.clientWidth*sx,clip.right);bottom=Math.min(bottom,y+frame.clientHeight*sy,clip.bottom);
+    }
+    const x=viewport?.offsetLeft||0,y=viewport?.offsetTop||0;
+    left=Math.max(left,x);top=Math.max(top,y);right=Math.min(right,x+host.clientWidth);bottom=Math.min(bottom,y+vh());
+    return right>left&&bottom>top?{state:'Visible reference',left:left-x,top:top-y,width:right-left,height:bottom-top}:{state:'Off screen or clipped'};
+  }
+  let revealSession=null;
+  function ensureRevealUI(){
+    if($('#revealhud'))return;
+    const content=document.createElement('div');content.innerHTML=`<div class="revealring" id="revealring" hidden aria-hidden="true"></div>
+    <section class="revealhud" id="revealhud" hidden role="region" aria-label="Reveal on page">
+      <header class="revealheading"><strong>Reveal on page</strong><button type="button" class="iconbutton" id="revealagain" aria-label="Highlight again" title="Highlight again">${icon('target')}</button><button type="button" class="actionpill" id="revealdone">Done</button></header>
+      <span id="revealurl"></span><div id="revealstatus" role="status" aria-live="polite"></div>
+      <div class="revealcontrols"><button type="button" class="actionpill" id="revealprev" aria-label="Previous reference">${icon('back')}</button><span id="revealcount"></span><button type="button" class="actionpill" id="revealnext" aria-label="Next reference">${icon('arrow')}</button><button type="button" class="actionpill" id="revealjump" hidden>Scroll to</button></div>
+    </section>
+`;
+    $('.dock').append(...content.childNodes);
+    on($('#revealdone'),'click',()=>endReveal());
+    on($('#revealprev'),'click',()=>showRevealMatch(-1));on($('#revealnext'),'click',()=>showRevealMatch(1));
+    on($('#revealagain'),'click',()=>showRevealMatch());on($('#revealjump'),'click',jumpReveal);
+    on($('#revealhud'),'keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();showRevealMatch(event.key==='ArrowLeft'?-1:1);}});
+  }
+  function stopRevealHighlight(){
+    if(!revealSession)return;
+    clearTimeout(revealSession.timer);revealSession.tracking?.abort();
+    if(revealSession.raf)cancelAnimationFrame(revealSession.raf);
+    revealSession.raf=0;$('#revealring').hidden=true;
+  }
+  function endReveal(focus=true){
+    if(!revealSession)return;
+    const session=revealSession;stopRevealHighlight();session.controller.abort();revealSession=null;
+    session.frame?.classList.remove('reveal-document');$('.dock').classList.remove('revealing','revealing-frame');
+    $('#revealhud').hidden=true;
+    if(focus&&session.trigger?.isConnected)session.trigger.focus({preventScroll:true});
+  }
+  function paintReveal(){
+    const session=revealSession;if(!session)return;
+    const match=session.matches[session.index],ring=$('#revealring');ring.hidden=true;
+    if(!match)return;
+    const evidence=(match.element.isConnected?revealReferences(match.element,session.entry.value):[]).concat(match.references.filter(el=>el.isConnected&&revealElement(el)===match.element).flatMap(el=>revealReferences(el,session.entry.value)));
+    const geometry=evidence.length?revealGeometry(match):{state:match.element.isConnected?'Reference changed':'Removed from page'};
+    const methods=[...new Set(evidence)];
+    $('#revealstatus').textContent=geometry.state+' · <'+match.element.localName+'>'+(methods.length?' · '+methods.join(', '):'');
+    $('#revealjump').hidden=geometry.state!=='Off screen or clipped';
+    if(geometry.width){
+      ring.style.cssText='left:'+geometry.left+'px;top:'+geometry.top+'px;width:'+geometry.width+'px;height:'+geometry.height+'px;';ring.hidden=false;
+    }
+  }
+  function showRevealMatch(step=0){
+    const session=revealSession;if(!session)return;
+    stopRevealHighlight();
+    if(session.matches.length)session.index=(session.index+step+session.matches.length)%session.matches.length;
+    $('#revealcount').textContent=session.matches.length?(session.index+1)+' / '+session.matches.length+(session.limited?' (limit)':''):'0 references';
+    for(const id of ['revealprev','revealnext'])$('#'+id).disabled=session.matches.length<2;
+    $('#revealagain').disabled=!session.matches.length;
+    $('#revealjump').hidden=true;
+    if(!session.matches.length){$('#revealstatus').textContent=session.limited?'No element match in the bounded search.':'No element match · it may be declared, timing-only or in a restricted frame.';return;}
+    paintReveal();
+    session.tracking=new AbortController();
+    const update=()=>{if(!session.raf)session.raf=requestAnimationFrame(()=>{session.raf=0;if(revealSession===session)paintReveal();});};
+    for(const win of new Set([window,...session.matches[session.index].frames.map(frame=>frame.ownerDocument.defaultView),session.matches[session.index].element.ownerDocument.defaultView])){
+      win.addEventListener('scroll',update,{capture:true,passive:true,signal:session.tracking.signal});
+      win.addEventListener('resize',update,{passive:true,signal:session.tracking.signal});
+      if(win.visualViewport)for(const event of ['resize','scroll'])win.visualViewport.addEventListener(event,update,{passive:true,signal:session.tracking.signal});
+    }
+    session.timer=setTimeout(stopRevealHighlight,2400);
+  }
+  function startReveal(entry,trigger){
+    if(closed)return;
+    endReveal(false);
+    let page=document,frame=null;
+    if(currentScan.mode!=='host'){
+      frame=inspectedFrame;
+      const live=livePage(frame);
+      if(!live||live.url!==currentScan.url){note('Reveal needs the live page. Open it and run Nous there.');return;}
+      page=live.doc;
+    }
+    ensureRevealUI();cancelInspection();
+    const found=findRevealMatches(page,entry.value,frame?[frame]:[]);
+    revealSession={...found,entry,trigger,frame,index:0,controller:new AbortController()};
+    $('.dock').classList.add('revealing');$('.dock').classList.toggle('revealing-frame',!!frame);frame?.classList.add('reveal-document');
+    $('#revealhud').hidden=false;$('#revealurl').textContent=entry.value;$('#revealurl').title=entry.value;
+    const visible=found.matches.findIndex(match=>revealGeometry(match).width);if(visible>=0)revealSession.index=visible;
+    for(const win of new Set([window,page.defaultView,...found.matches.flatMap(match=>match.frames.map(parent=>parent.ownerDocument.defaultView))])){
+      win.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();endReveal();}},{capture:true,signal:revealSession.controller.signal});
+      win.addEventListener('pagehide',()=>endReveal(false),{once:true,signal:revealSession.controller.signal});
+    }
+    for(const parent of new Set(found.matches.flatMap(match=>match.frames)))parent.addEventListener('load',()=>endReveal(),{once:true,signal:revealSession.controller.signal});
+    showRevealMatch();$('#revealdone').focus({preventScroll:true});
+  }
+  function jumpReveal(){
+    const match=revealSession?.matches[revealSession.index];if(!match)return;
+    paintReveal();if($('#revealjump').hidden)return;
+    for(const el of [...match.frames,match.element])el.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'});
+    showRevealMatch();
+  }
   function render(){
+    if(revealSession)endReveal(false);
     if(category!=='All'&&!preferences.visibility[category])category='All';
     const q=$('#find').value.toLowerCase().trim();
     filtered=records.filter(entry=>(category==='All'||entry.type===category)&&(!q||(entry.value+' '+entry.label+' '+entry.source).toLowerCase().includes(q)));
@@ -884,7 +1077,11 @@
       const value=document.createElement('div');value.className='val';if(entry.font||entry.type==='Video')value.style.cssText='white-space:normal;overflow-wrap:anywhere;';value.textContent=entry.value;value.title=entry.value;
       main.append(eyebrow,label,value);button.append(avatar,main);button.onclick=()=>showPreview(entry,button);
       const copy=document.createElement('button');copy.type='button';copy.className='copyitem';copy.innerHTML=icon('copy');copy.setAttribute('aria-label','Copy '+entry.label);copy.onclick=()=>copyText(entry.value);
-      row.append(button,copy);fragment.append(row);
+      row.append(button,copy);
+      if(entry.url&&/^(https?:|blob:)/i.test(entry.value)){
+        const reveal=document.createElement('button');reveal.type='button';reveal.className='copyitem revealitem';reveal.textContent='Reveal';reveal.title='Reveal on page';reveal.setAttribute('aria-label','Reveal on page: '+entry.label);reveal.onclick=()=>startReveal(entry,reveal);row.append(reveal);
+      }
+      fragment.append(row);
     }
     list.append(fragment);
     if(filtered.length>limit){const more=document.createElement('button');more.className='more';more.textContent='Show '+Math.min(80,filtered.length-limit)+' more';more.onclick=()=>{const position=list.scrollTop;limit+=80;render();list.scrollTop=position;};list.append(more);}
