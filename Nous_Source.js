@@ -73,7 +73,8 @@
     .pagecontext .dot{width:4px;height:4px;background:#31896f;border-radius:50%;flex:none}
     #site{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
     .totalpill{font-size:10px;color:#436e5b;white-space:nowrap;font-variant-numeric:tabular-nums}
-    .tools{display:flex;align-items:stretch;flex:none;min-height:36px;background:#edf3ef;border-bottom:1px solid var(--line)}
+    .tools{display:flex;align-items:stretch;flex:none;min-height:36px;overflow-x:auto;scrollbar-width:none;background:#edf3ef;border-bottom:1px solid var(--line)}
+    .tools::-webkit-scrollbar{display:none}
     .tool{display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 12px;border:0;border-right:1px solid #d5e1da;background:transparent;border-radius:0;color:#3d6351;font-size:11px;font-weight:550;white-space:nowrap}
     .tool .icon{width:14px;height:14px}
     .tool:hover{background:#dcece2}
