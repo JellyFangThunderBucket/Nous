@@ -73,7 +73,8 @@
     .pagecontext .dot{width:4px;height:4px;background:#31896f;border-radius:50%;flex:none}
     #site{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
     .totalpill{font-size:10px;color:#436e5b;white-space:nowrap;font-variant-numeric:tabular-nums}
-    .tools{display:flex;align-items:stretch;flex:none;min-height:36px;background:#edf3ef;border-bottom:1px solid var(--line)}
+    .tools{display:flex;align-items:stretch;flex:none;min-height:36px;overflow-x:auto;scrollbar-width:none;background:#edf3ef;border-bottom:1px solid var(--line)}
+    .tools::-webkit-scrollbar{display:none}
     .tool{display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 12px;border:0;border-right:1px solid #d5e1da;background:transparent;border-radius:0;color:#3d6351;font-size:11px;font-weight:550;white-space:nowrap}
     .tool .icon{width:14px;height:14px}
     .tool:hover{background:#dcece2}
@@ -246,7 +247,7 @@
       <div class="grab" id="grab" role="separator" tabindex="0" aria-label="Resize inspector" aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="100" title="Drag or use arrow keys to resize"></div>
       <header class="bar"><span class="brandmark">${mark}</span><div class="brandblock"><div class="wordmark">nous</div><div class="brandtag">mobile inspector</div></div><div class="windowtools"><button class="iconbutton" id="minimize" aria-label="Minimize Nous" title="Minimize">${icon('minimize')}</button><button class="iconbutton" id="maximize" aria-label="Expand inspector" title="Expand">${icon('expand')}</button><button class="iconbutton" id="close" aria-label="Close Nous" title="Close">${icon('close')}</button></div></header>
       <div class="pagecontext"><button type="button" id="inspectback" hidden aria-label="Previous inspected page">${icon('back')}Back</button><span class="dot"></span><span id="site"></span><span class="totalpill" id="total">0 found</span></div>
-      <div class="tools" role="toolbar" aria-label="Inspector actions"><button class="tool" id="scan" aria-label="Rescan page">${icon('refresh')}Rescan</button><button class="tool" id="copy" aria-label="Copy filtered list">${icon('copy')}Copy list</button><button class="tool" id="save" aria-label="Export filtered list as JSON">${icon('download')}Export JSON</button></div>
+      <div class="tools" role="toolbar" aria-label="Inspector actions"><button class="tool" id="scan" aria-label="Rescan page">${icon('refresh')}Rescan</button><button class="tool" id="copy" aria-label="Copy filtered list">${icon('copy')}Copy list</button><button class="tool" id="save" aria-label="Export filtered list as JSON">${icon('download')}Export JSON</button><button class="tool" id="basecamp" aria-label="Send full discovery snapshot to Base Camp">${icon('thread')}Base Camp</button></div>
       <div class="tabstrip"><nav class="tabs" id="tabs" aria-label="Resource categories"></nav><button class="tab settingstab" id="settingstab" aria-controls="settingspanel" aria-pressed="false">${icon('settings')}Settings</button><button class="tab settingstab" id="sourcestab" aria-controls="sourcespanel" aria-pressed="false">Sources</button></div>
       <div class="searchline"><label class="searchbox">${icon('search')}<input id="find" type="search" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Search resources…" aria-label="Search resources"></label></div>
       <div class="listhead"><span id="count" role="status" aria-live="polite">RESOURCES</span><span id="hint">Tap to peek</span></div>
@@ -271,6 +272,7 @@
         <label class="settingrow"><span>Rescan</span><span class="switchwrap"><input id="setting-visible-scan" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
         <label class="settingrow"><span>Copy list</span><span class="switchwrap"><input id="setting-visible-copy" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
         <label class="settingrow"><span>Export JSON</span><span class="switchwrap"><input id="setting-visible-save" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
+        <label class="settingrow"><span>Base Camp handoff</span><span class="switchwrap"><input id="setting-visible-basecamp" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
         <div class="settingsgroup">Peek</div>
         <label class="settingrow"><span>Copy resource</span><span class="switchwrap"><input id="setting-visible-previewcopy" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
         <label class="settingrow"><span>Inspect this page</span><span class="switchwrap"><input id="setting-visible-inspectpage" type="checkbox" role="switch"><span class="switchtrack" aria-hidden="true"></span></span></label>
@@ -320,7 +322,7 @@
   const downloads=new Set();
   const vh=()=>Math.max(240,viewport?viewport.height:window.innerHeight);
   const clamp=(n,min,max)=>Math.max(min,Math.min(n,max));
-  const DEFAULTS=Object.freeze({theme:'light',accent:'mint',textSize:12,density:'compact',inspectorHeight:60,previewHeight:34,wrapUrls:false,rememberSizes:true,visibility:Object.freeze({scan:true,copy:true,save:true,previewcopy:true,inspectpage:true,sourcestab:true,minimize:true,maximize:true,Links:true,Images:true,Video:true,Audio:true,Scripts:true,Styles:true,Frames:true,Metadata:true,Network:true})});
+  const DEFAULTS=Object.freeze({theme:'light',accent:'mint',textSize:12,density:'compact',inspectorHeight:60,previewHeight:34,wrapUrls:false,rememberSizes:true,visibility:Object.freeze({scan:true,copy:true,save:true,basecamp:true,previewcopy:true,inspectpage:true,sourcestab:true,minimize:true,maximize:true,Links:true,Images:true,Video:true,Audio:true,Scripts:true,Styles:true,Frames:true,Metadata:true,Network:true})});
   const PREF_KEY='__nous_preferences_v1';
   function sanitizePreferences(input){
     const p=input&&typeof input==='object'?input:{}, out={...DEFAULTS,visibility:{...DEFAULTS.visibility}};
@@ -355,9 +357,9 @@
     const visible=preferences.visibility;
     if(!visible.sourcestab&&sourcesOpen)setSourcesView(false);
     if(!visible.minimize&&mini)toggleMini();
-    for(const id of ['scan','copy','save','previewcopy','sourcestab','minimize','maximize'])$('#'+id).hidden=!visible[id];
+    for(const id of ['scan','copy','save','basecamp','previewcopy','sourcestab','minimize','maximize'])$('#'+id).hidden=!visible[id];
     $('#inspectpage').hidden=!visible.inspectpage||!peekFrame;
-    $('.tools').hidden=settingsOpen||sourcesOpen||!(visible.scan||visible.copy||visible.save);
+    $('.tools').hidden=settingsOpen||sourcesOpen||!(visible.scan||visible.copy||visible.save||visible.basecamp);
     for(const [name,tab] of tabs)tab.button.hidden=name!=='All'&&!visible[name];
     if(category!=='All'&&!visible[category]){category='All';render();}
   }
@@ -382,7 +384,7 @@
     settingsOpen=open;
     if(open&&previewActive)closePreview();
     $('#settingspanel').hidden=!open;$('#items').hidden=open;
-    $('.tools').hidden=open||!(preferences.visibility.scan||preferences.visibility.copy||preferences.visibility.save);$('.searchline').hidden=open;$('.listhead').hidden=open;
+    $('.tools').hidden=open||!(preferences.visibility.scan||preferences.visibility.copy||preferences.visibility.save||preferences.visibility.basecamp);$('.searchline').hidden=open;$('.listhead').hidden=open;
     $('#settingstab').classList.toggle('active',open);$('#settingstab').setAttribute('aria-pressed',String(open));
     if(open)syncSettings();
     if(redraw)render();
@@ -421,7 +423,7 @@
     }
     sourcesOpen=open;
     $('#sourcespanel').hidden=!open;$('#items').hidden=open;
-    $('.tools').hidden=open||!(preferences.visibility.scan||preferences.visibility.copy||preferences.visibility.save);$('.searchline').hidden=open;$('.listhead').hidden=open;
+    $('.tools').hidden=open||!(preferences.visibility.scan||preferences.visibility.copy||preferences.visibility.save||preferences.visibility.basecamp);$('.searchline').hidden=open;$('.listhead').hidden=open;
     $('#sourcestab').classList.toggle('active',open);$('#sourcestab').setAttribute('aria-pressed',String(open));
     if(open)showSources();
     else{sourceSnapshot='';$('#sourcecode').textContent='';}
@@ -1105,11 +1107,29 @@
   on($('#inspectpage'),'click',inspectPreview);
   on($('#inspectback'),'click',backInspection);
   on($('#copy'),'click',()=>copyText(filtered.map(entry=>entry.type+'\t'+entry.label+'\t'+entry.value).join('\n')));
+  function downloadExport(data,filename){
+    const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));downloads.add(url);
+    const a=document.createElement('a');a.href=url;a.download=filename;root.append(a);a.click();a.remove();
+    later(()=>{URL.revokeObjectURL(url);downloads.delete(url);},30000);
+  }
   on($('#save'),'click',()=>{
     const data={app:'Nous',version:'1.6',page:currentScan.url,capturedAt:new Date().toISOString(),entries:filtered};
-    const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));downloads.add(url);
-    const a=document.createElement('a');a.href=url;a.download='nous-resources.json';root.append(a);a.click();a.remove();
-    later(()=>{URL.revokeObjectURL(url);downloads.delete(url);},30000);note('Your threads, exported.');
+    downloadExport(data,'nous-resources.json');note('Your threads, exported.');
+  });
+  on($('#basecamp'),'click',()=>{
+    /* Explicit, user-initiated handoff. No automatic network requests. */
+    const data={app:'Nous',version:'1.6',page:currentScan.url,capturedAt:new Date().toISOString(),
+      entries:records,transfer:{protocol:'nous-basecamp-v1',scope:'all-resources'}};
+    const filename='nous-basecamp-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
+    const fallback=()=>{downloadExport(data,filename);note('Base Camp snapshot saved. Import the JSON in Minis.');};
+    if(typeof File==='undefined'||!navigator.share||!navigator.canShare){fallback();return;}
+    try{
+      const file=new File([JSON.stringify(data,null,2)],filename,{type:'application/json'});
+      if(!navigator.canShare({files:[file]})){fallback();return;}
+      navigator.share({title:'Nous — Base Camp',files:[file]})
+        .then(()=>{if(!closed)note('Snapshot shared. Follow the thread.');})
+        .catch(error=>{if(error?.name!=='AbortError'&&!closed)fallback();});
+    }catch{fallback();}
   });
   on($('#previewclose'),'click',()=>closePreview(true));on($('#previewcopy'),'click',()=>{if(previewEntry)copyText(previewUrl());});on($('#previewopen'),'click',openExternal);
   on($('#close'),'click',closeNous);on($('#minimize'),'click',toggleMini);on($('#maximize'),'click',toggleFull);
