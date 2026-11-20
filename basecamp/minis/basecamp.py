@@ -64,7 +64,7 @@ def normalize(item: object) -> tuple[str, str, str, str, str] | None:
     label = item.get("label", "")
     source = item.get("source", "")
     return (typ.strip(), value.strip(), str(label)[:1000], str(source)[:1000],
-            json.dumps(item, ensure_ascii=False, separators=(",", ":"))[:32000])
+            json.dumps(item, ensure_ascii=False, separators=(",", ":")))
 
 def import_file(conn: sqlite3.Connection, filename: Path) -> tuple[str, int, int]:
     if filename.stat().st_size > MAX_FILE_BYTES:
@@ -143,8 +143,12 @@ def page_html(conn: sqlite3.Connection, q: str, kind: str) -> str:
     cards = []
     for r in matches:
         val = E(r["value"])
-        parsed = urlsplit(r["value"])
-        if parsed.scheme in ("http", "https") and parsed.netloc:
+        try:
+            parsed = urlsplit(r["value"])
+            linkable = parsed.scheme in ("http", "https") and bool(parsed.netloc)
+        except ValueError:
+            linkable = False
+        if linkable:
             val = '<a href="' + E(r["value"], quote=True) + '" rel="noopener noreferrer" target="_blank">' + val + '</a>'
         cards.append('<article><span class="type">' + E(r["type"]) + '</span> ' +
                      '<strong>' + E(r["label"]) + '</strong><div class="value">' + val +
@@ -173,6 +177,11 @@ def serve(conn: sqlite3.Connection, port: int) -> None:
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             parsed = urlsplit(self.path)
+            if self.headers.get("Host", "") not in (
+                f"127.0.0.1:{port}", f"localhost:{port}", "127.0.0.1", "localhost"
+            ):
+                self.send_error(403)
+                return
             if parsed.path != "/":
                 self.send_error(404)
                 return
@@ -184,7 +193,7 @@ def serve(conn: sqlite3.Connection, port: int) -> None:
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("Content-Security-Policy",
-                             "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'self'")
+                             "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
             self.end_headers()
             self.wfile.write(page)
     print(f"Base Camp listening on http://127.0.0.1:{port}/ (Minis-local only)")
@@ -205,8 +214,8 @@ def main() -> None:
     find.add_argument("--limit", type=int, default=50)
     web = commands.add_parser("serve")
     web.add_argument("--port", type=int, default=8765)
-    conn = database(parser.parse_args().db)
     args = parser.parse_args()
+    conn = database(args.db)
     try:
         if args.command == "import":
             for file in args.files:
