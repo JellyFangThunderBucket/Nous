@@ -72,3 +72,13 @@ verification limits are recorded in TESTING.txt. No external code was added.
   2.4 seconds; no new dependencies, observers or discovery requests.
 - Rebuild the bookmarklet and embedded preview. Validation, measurements and
   remaining device checks: docs/reveal/REPORT.md.
+
+## Chrome desktop package
+- Add chrome-extension/ with a Manifest V3 launcher, matching brand icons and a
+  ready-to-extract Nous-Chrome.zip, built from the complete shared inspector.
+- Launch or close Nous from the toolbar or shortcut with only activeTab and
+  scripting permissions; no automatic content scripts or background worker.
+- Keep the source, bookmarklet and preview unchanged; include the Reveal build
+  from PR #7 and verify the embedded source hash on every package check.
+- Add reproducible ZIP packaging, launcher/desktop fixtures and a real install
+  check that reports a skip when browser administrator policy blocks loading.

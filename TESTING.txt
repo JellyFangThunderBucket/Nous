@@ -192,3 +192,18 @@ Playwright/Chromium test tooling; these are not application dependencies.
 See docs/reveal/REPORT.md for coverage, bounds, sizes, measured startup cost,
 known limits and required physical iPhone Safari checks. Historical candidate
 release manifests remain unchanged; no tag or stable release is published.
+
+CHROME DESKTOP EXTENSION
+Separate distribution: chrome-extension/README.md and Nous-Chrome.zip.
+
+  python3 chrome-extension/package.py
+  python3 chrome-extension/package.py --check
+  node tests/chrome-extension.cjs
+  node tests/chrome-extension-browser.cjs
+  node tests/chrome-extension-install.cjs
+
+The regular Node build also updates the embedded Chrome engine; package.py
+rebuilds and checks both the source hash and deterministic ZIP/checksum. See
+chrome-extension/TESTING.md for exact coverage and the installation limitation.
+The managed cloud Chromium policy blocks unpacked extension loading, so the
+real extension-install check reports SKIP. No browser policy is overridden.
