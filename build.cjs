@@ -9,3 +9,5 @@ for(const [name,value] of [['code',source],['text',bookmarklet]]){
   html=html.replace(pattern,()=> 'const '+name+'='+JSON.stringify(value)+';');
 }
 fs.writeFileSync(__dirname+'/Nous_Preview.html',html);
+
+require('./chrome-extension/build.cjs');

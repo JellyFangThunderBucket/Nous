@@ -61,3 +61,24 @@ verification limits are recorded in TESTING.txt. No external code was added.
   Styles. Preserve CSS bases, declaration details and merged observations.
 - Keep full video/font URLs visible and row Copy exact. Regenerate bookmarklet
   and preview with build.cjs; add focused discovery and copy regression checks.
+
+## Reveal on page
+- Add a direct Reveal action beside row Copy for HTTP(S) and session URL entries.
+- Briefly highlight matching page elements, cycle shared references, and label
+  hidden, clipped/off-screen, declaration-only, changed and removed references.
+- Keep scrolling explicit, preserve inspection/Peek state, and support accessible
+  embedded documents without loading or moving frames.
+- Create the floating controls on demand and release highlight tracking after
+  2.4 seconds; no new dependencies, observers or discovery requests.
+- Rebuild the bookmarklet and embedded preview. Validation, measurements and
+  remaining device checks: docs/reveal/REPORT.md.
+
+## Chrome desktop package
+- Add chrome-extension/ with a Manifest V3 launcher, matching brand icons and a
+  ready-to-extract Nous-Chrome.zip, built from the complete shared inspector.
+- Launch or close Nous from the toolbar or shortcut with only activeTab and
+  scripting permissions; no automatic content scripts or background worker.
+- Keep the source, bookmarklet and preview unchanged; include the Reveal build
+  from PR #7 and verify the embedded source hash on every package check.
+- Add reproducible ZIP packaging, launcher/desktop fixtures and a real install
+  check that reports a skip when browser administrator policy blocks loading.
